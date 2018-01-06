@@ -23,4 +23,12 @@ security:
             logout_on_user_change: true
             form_login:
                 login_path: login
-                check_path: login_check
+                check_path: login
+            logout:
+                path: /logout
+                target: /
+
+    access_control:
+        - { path: ^/login, roles: IS_AUTHENTICATED_ANONYMOUSLY}
+        - { path: ^/signup, roles: IS_AUTHENTICATED_ANONYMOUSLY}
+        - { path: ^/, roles: IS_AUTHENTICATED_FULLY}

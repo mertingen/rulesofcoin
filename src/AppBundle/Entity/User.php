@@ -36,6 +36,12 @@ class User implements UserInterface
      */
     private $password;
 
+    /**
+     * @var
+     * @ORM\Column(name="created_at", type="datetime")
+     */
+    private $createdAt;
+
 
     /**
      * Get id
@@ -109,7 +115,7 @@ class User implements UserInterface
      * and populated in any number of different ways when the user object
      * is created.
      *
-     * @return (Role|string)[] The user roles
+     * @return array (Role|string)[] The user roles
      */
     public function getRoles()
     {
@@ -138,5 +144,28 @@ class User implements UserInterface
     {
         // TODO: Implement eraseCredentials() method.
     }
-}
 
+    /**
+     * Set createdAt
+     *
+     * @param \DateTime $createdAt
+     *
+     * @return User
+     */
+    public function setCreatedAt($createdAt)
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    /**
+     * Get createdAt
+     *
+     * @return \DateTime
+     */
+    public function getCreatedAt()
+    {
+        return $this->createdAt;
+    }
+}

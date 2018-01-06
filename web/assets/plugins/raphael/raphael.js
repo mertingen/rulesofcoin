@@ -5825,9 +5825,9 @@ return /******/ (function(modules) { // webpackBootstrap
 	     [ method ]
 	     **
 	     * Binds given event handler with a given name to only run once then unbind itself.
-	     | eve.once("login", f);
-	     | eve("login"); // triggers f
-	     | eve("login"); // no listeners
+	     | eve.once("Login", f);
+	     | eve("Login"); // triggers f
+	     | eve("Login"); // no listeners
 	     * Use @eve to trigger the listener.
 	     **
 	     > Arguments

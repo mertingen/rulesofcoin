@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+    <title>Sign In | Bootstrap Based Admin Template - Material Design</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon.ico') }}"/>
+
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Roboto:400,700&subset=latin,cyrillic-ext" rel="stylesheet"
+          type="text/css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+    <link href="{{ asset('assets/plugins/bootstrap/css/bootstrap.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/plugins/node-waves/waves.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/plugins/animate-css/animate.css') }}" rel="stylesheet">
+    <link href="{{ asset('assets/css/style.min.css') }}" rel="stylesheet">
+</head>
+
+<body class="signup-page">
+<div class="signup-box">
+    <div class="logo">
+        <a href="javascript:void(0);">Admin<b>BSB</b></a>
+        <small>Admin BootStrap Based - Material Design</small>
+    </div>
+    <div class="card">
+        <div class="body">
+            <form id="sign_up" method="POST">
+                <div class="msg">Register a new membership</div>
+                <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="material-icons">person</i>
+                        </span>
+                    <div class="form-line">
+                        <input type="text" class="form-control" name="username" placeholder="Username" required
+                               autofocus>
+                    </div>
+                </div>
+                <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="material-icons">lock</i>
+                        </span>
+                    <div class="form-line">
+                        <input type="password" class="form-control" name="password" minlength="6" placeholder="Password"
+                               required>
+                    </div>
+                </div>
+                <div class="input-group">
+                        <span class="input-group-addon">
+                            <i class="material-icons">lock</i>
+                        </span>
+                    <div class="form-line">
+                        <input type="password" class="form-control" name="confirm_password" minlength="6"
+                               placeholder="Confirm Password" required>
+                    </div>
+                </div>
+                <button class="btn btn-block btn-lg bg-pink waves-effect" type="submit">SIGN UP</button>
+
+                <div class="m-t-25 m-b--5 align-center">
+                    <a href="{{ path('login') }}">You already have a membership?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+<script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
+<script src="{{ asset('assets/plugins/bootstrap/js/bootstrap.js') }}"></script>
+<script src="{{ asset('assets/plugins/node-waves/waves.js') }}"></script>
+<script src="{{ asset('assets/plugins/jquery-validation/jquery.validate.js') }}"></script>
+<script src="{{ asset('assets/js/admin.js') }}"></script>
+<!--<script src="../../js/pages/examples/sign-in.js"></script> !-->
+</body>
+
+</html>
