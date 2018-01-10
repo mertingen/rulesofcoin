@@ -38,7 +38,7 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                             $userBinanceApi->buy($symbol, $quantity, $trades['price']);
                             echo PHP_EOL . $symbol . ' için emir girildi! RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         } else {
-                            echo 'RULE İŞLENMEDİ' . ' RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
                     }
                 }
