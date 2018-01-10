@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Rule;
 use AppBundle\Entity\User;
 use AppBundle\Service\BinanceService;
+use AppBundle\Service\RedisService;
 use AppBundle\Service\UserService;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
@@ -43,8 +44,20 @@ class BinanceController extends Controller
      */
     public function addRuleAction($symbol = NULL, BinanceService $binanceService)
     {
-        if (empty($symbol)) {
+        $symbols = $this->get('redis_service')->get('symbols');
+        if (!in_array($symbol, $symbols)) {
             dump('symbol is not valid!');
+            die;
+        }
+
+        $where = array(
+            'user' => $this->getUser(),
+            'symbol' => $symbol
+        );
+
+        $isRule = $binanceService->getRule($where);
+        if ($isRule) {
+            dump('Exist rule!');
             die;
         }
 
@@ -67,8 +80,21 @@ class BinanceController extends Controller
      */
     public function postAddRuleAction($symbol = NULL, BinanceService $binanceService, Request $request, UserService $userService)
     {
-        if (empty($symbol)) {
+        $symbols = $this->get('redis_service')->get('symbols');
+
+        if (!in_array($symbol, $symbols)) {
             dump('symbol is not valid!');
+            die;
+        }
+
+        $where = array(
+            'user' => $this->getUser(),
+            'symbol' => $symbol
+        );
+
+        $isRule = $binanceService->getRule($where);
+        if ($isRule) {
+            dump('Exist rule!');
             die;
         }
 
@@ -76,6 +102,11 @@ class BinanceController extends Controller
 
         if (empty($price)) {
             dump('Price not found!');
+            die;
+        }
+
+        if (strlen($price) !== 10) {
+            dump('Price not valid!');
             die;
         }
 
@@ -117,6 +148,12 @@ class BinanceController extends Controller
 
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
 
+        $symbols = $this->get('redis_service')->get('symbols');
+        if (!in_array($rule->getSymbol(), $symbols)) {
+            dump('symbol is not valid!');
+            die;
+        }
+
         if (!$rule) {
             dump('Rule not found!');
             die;
@@ -133,21 +170,15 @@ class BinanceController extends Controller
     }
 
     /**
-     * @Route("/editRule/{symbol}/{id}", methods={"POST"}, name="binance-post-edit-rule")
-     * @param null $symbol
+     * @Route("/editRule/{id}", methods={"POST"}, name="binance-post-edit-rule")
      * @param null $id
      * @param BinanceService $binanceService
      * @param Request $request
      * @param UserService $userService
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function postEditRuleAction($symbol = NULL, $id = NULL, BinanceService $binanceService, Request $request, UserService $userService)
+    public function postEditRuleAction($id = NULL, BinanceService $binanceService, Request $request, UserService $userService)
     {
-        if (empty($symbol)) {
-            dump('symbol is not valid!');
-            die;
-        }
-
         if (!$id) {
             dump('Rule Id not found!');
             die;
@@ -159,9 +190,19 @@ class BinanceController extends Controller
             die;
         }
 
+        $symbols = $this->get('redis_service')->get('symbols');
+        if (!in_array($rule->getSymbol(), $symbols)) {
+            dump('symbol is not valid!');
+            die;
+        }
+
         $price = $request->request->get('price', null);
         if (!$price) {
             dump('Price not found!');
+            die;
+        }
+        if (strlen($price) !== 10) {
+            dump('Price not valid!');
             die;
         }
 
@@ -189,7 +230,17 @@ class BinanceController extends Controller
 
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
 
-        $this->get('redis_service')->delete($id);
+        $rules = $this->get('redis_service')->get('rules');
+        foreach ($rules[$rule->getSymbol()] as $key => $symbolRule) {
+            if ($symbolRule['ruleId'] == $id) {
+                unset($rules[$rule->getSymbol()][$key]);
+                if (count($rules[$rule->getSymbol()]) < 1) {
+                    unset($rules[$rule->getSymbol()]);
+                }
+                break;
+            }
+        }
+        $this->get('redis_service')->insert('rules', $rules);
         $isDeleted = $binanceService->removeRule($rule);
         if (!$isDeleted) {
             return new Response(json_encode(array('status' => false, 'message' => 'Unsuccessfully deleted.')), 404);

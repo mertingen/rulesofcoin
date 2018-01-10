@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/rulesofcoin.iml" filepath="$PROJECT_DIR$/.idea/rulesofcoin.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/rulechain.iml" filepath="$PROJECT_DIR$/.idea/rulechain.iml" />
     </modules>
   </component>
 </project>

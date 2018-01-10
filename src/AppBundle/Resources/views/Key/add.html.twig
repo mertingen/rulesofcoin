@@ -91,6 +91,7 @@
                                 <div class="form-line">
                                     <input type="text" id="binance-api-key" name="binance-api-key" class="form-control"
                                            placeholder="Enter your Binance api key"
+                                           required
                                            value="{{ app.user.binanceApiKey }}">
                                 </div>
                             </div>
@@ -100,7 +101,7 @@
                                     <input type="text" id="binance-secret-key" name="binance-secret-key"
                                            class="form-control"
                                            placeholder="Enter your Binance secret key"
-                                           value="{{ app.user.binanceSecretKey }}">
+                                           value="{{ app.user.binanceSecretKey }}" required>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE

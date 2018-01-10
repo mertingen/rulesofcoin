@@ -4,28 +4,32 @@
     <!-- Basic Example | Horizontal Layout -->
     <div class="row clearfix">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
             <div class="card">
                 <div class="header">
                     <h2>
-                        <b>{{ data['symbol'] }}</b> RULE (<span
-                                id="{{ data['symbol'] | lower }}">{{ data['price'] }}</span>)
-                    </h2>
+                        <b>{{ data['symbol'] }}</b> (<span
+                                id="{{ data['symbol'] | lower }}" class="live-price">{{ data['price'] }}</span>)
 
+                    </h2>
                 </div>
                 <div class="body">
-                    <form method="post" action="{{ path('binance-post-add-rule', {symbol: data['symbol']}) }}">
-                        <label for="api_key">Btc Price</label>
-                        <div class="form-group">
+                    <form id="form_advanced_validation" method="POST"
+                          action="{{ path('binance-post-add-rule', {symbol: data['symbol']}) }}">
+                        <div class="form-group form-float">
                             <div class="form-line">
-                                <input type="text" id="binance-api-key" name="price" class="form-control"
-                                       placeholder="{{ data['price'] }}">
+                                <input type="text" class="form-control" id="rule-price"
+                                       placeholder="{{ data['price'] }}" name="price" value="" maxlength="10"
+                                       minlength="10"
+                                       required>
                             </div>
+                            <div class="help-info">10 characters</div>
                         </div>
-                        <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
-                        </button>
+                        <button class="btn btn-primary waves-effect" type="submit">SAVE</button>
                     </form>
                 </div>
             </div>
+
         </div>
     </div>
 {% endblock %}
@@ -56,6 +60,10 @@
                     }
                 }
             };
+
+            $(".live-price").click(function () {
+                $("#rule-price").val($(this).text());
+            });
         });
     </script>
 {% endblock %}
