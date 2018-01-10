@@ -66,3 +66,36 @@ swiftmailer:
     username: '%mailer_user%'
     password: '%mailer_password%'
     spool: { type: memory }
+
+old_sound_rabbit_mq:
+    connections:
+        default:
+            host:     "%queue_host%"
+            port:     "%queue_port%"
+            user:     "%queue_user%"
+            password: "%queue_password%"
+            vhost:    '/'
+            lazy:     true
+    producers:
+        rule:
+            connection:        default
+            exchange_options:  {name: 'rule', type: direct}
+    consumers:
+        rule:
+            connection:        default
+            exchange_options:  {name: 'rule', type: direct}
+            callback:          consumer.rule
+            queue_options:     {name: 'rule'}
+            qos_options:       {prefetch_size: 0, prefetch_count: 10, global: false}
+
+doctrine_cache:
+    aliases:
+        cache: "%cache_provider%"
+    providers:
+        redis_cache:
+            namespace: "%redis_cache_keyspace%"
+            redis:
+                host: "%redis_cache_host%"
+                port: "%redis_cache_port%"
+        array_cache:
+            type: array

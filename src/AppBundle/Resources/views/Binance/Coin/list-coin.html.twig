@@ -1,0 +1,72 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="card">
+                <div class="header">
+                    <h2>
+                        Coin Table
+                    </h2>
+                </div>
+                <div class="body table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for name,price in coins %}
+                            <tr class="list-item-block">
+                                <td>{{ name }}</td>
+                                <td id="{{ name | lower }}">{{ price }}</td>
+                                <td>
+                                    <a data-toggle="confirmation"
+                                       href="{{ path('binance-add-rule', {symbol: name}) }}"
+                                       class="btn fancybox default edit btn-xs green"
+                                       title="Edit"><i class="material-icons">edit</i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block javascripts %}
+    <script src="{{ asset("assets/plugins/sweetalert/sweetalert.min.js") }}"></script>
+    <script src="{{ asset("assets/js/demo.js") }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            var coins = {{ coins | json_encode | raw }};
+            var prices = [];
+            $.each(coins, function (key, value) {
+                var url = "wss://stream.binance.com:9443/ws/" + key.toLowerCase() + "@aggTrade";
+                w = new WebSocket(url);
+                w.onopen = function () {
+                    //console.log('OPENED!');
+                };
+                w.onmessage = function (e) {
+                    var data = JSON.parse(e.data.toString());
+                    if (!prices[key]) {
+                        prices[key] = data.p;
+                    } else {
+                        if (prices[key] > data.p) {
+                            $('#' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
+                        } else {
+                            $('#' + key.toLowerCase()).text(data.p).css('color', '#39FD32');
+                        }
+                    }
+                };
+            });
+        });
+    </script>
+{% endblock %}

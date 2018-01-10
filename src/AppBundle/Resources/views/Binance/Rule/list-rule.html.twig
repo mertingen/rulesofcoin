@@ -1,0 +1,98 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+
+    <div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="card">
+                <div class="header">
+                    <h2>
+                        Rule Table
+                    </h2>
+                </div>
+                <div class="body table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Symbol</th>
+                            <th>Price</th>
+                            <th>Is Done</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% set counter = 1 %}
+                        {% for rule in rules %}
+                            <tr class="list-item-block">
+                                <th scope="row">{{ counter }}</th>
+                                <td>{{ rule.symbol }}</td>
+                                <td>{{ rule.price }}</td>
+                                <td>
+                                    {% if rule.isDone %}
+                                        <i class="material-icons">done</i>
+                                    {% else %}
+                                        <i class="material-icons">error_outline</i>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a data-toggle="confirmation"
+                                       href="{{ path('binance-edit-rule', {id: rule.id}) }}"
+                                       class="btn fancybox default edit btn-xs green"
+                                       title="Edit"><i class="material-icons">edit</i></a>
+                                    <a data-toggle="confirmation"
+                                       href="{{ path('binance-delete-rule', {id: rule.id}) }}"
+                                       data-type="confirm"
+                                       class="btn fancybox default delete btn-xs green"
+                                       title="Delete"><i class="material-icons">delete</i></a>
+                                </td>
+                            </tr>
+                            {% set counter = counter + 1 %}
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+{% endblock %}
+
+
+    {% block javascripts %}
+        <script src="{{ asset('assets/js/iziToast.min.js') }}" type="text/javascript"></script>
+        <script type="text/javascript">
+            $(document).ready(function () {
+                $('.delete').click(function (event) {
+                    event.preventDefault();
+                    var targetElem = $(this);
+                    swal({
+                        title: "Are you sure?",
+                        text: "You will not be able to recover this data!",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: "#DD6B55",
+                        confirmButtonText: "Yes, delete it!",
+                        closeOnConfirm: false
+                    }, function () {
+                        var targetHref = targetElem.attr('href');
+                        $.get(targetHref, function (data) {
+                            var objData = JSON.parse(data);
+                            if (objData.status) {
+                                targetElem.closest('.list-item-block').remove();
+                                swal("Deleted!", "Your data has been deleted.", "success");
+                            } else {
+                                swal("Error!", "error", "warning");
+                            }
+                        });
+                    });
+                })
+            });
+        </script>
+
+
+    {% endblock %}

@@ -1,0 +1,133 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <!-- Basic Example | Horizontal Layout -->
+    <div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            {% if (app.user.binanceApiKey is empty) or (app.user.binanceSecretKey is empty) %}
+                <div class="card">
+                    <div class="header">
+                        <h2>BINANCE EXCHANGE</h2>
+                    </div>
+                    <div class="body">
+                        <div id="wizard_horizontal">
+                            <h2>First Step</h2>
+                            <section>
+                                <p>
+                                    Firstly, you should open your account page, you will see <b>Api Setting</b> button.
+                                    Click it.
+                                </p>
+                                <img src="{{ asset('assets/images/binance-api-1.png') }}" width="65%" height="200">
+                            </section>
+
+                            <h2>Second Step</h2>
+                            <section>
+                                <p>
+                                    Enter your app name and click <b>Create New Key</b> button, then you should enter
+                                    the
+                                    <b>Google Authenticator</b>.
+                                </p>
+                                <img src="{{ asset('assets/images/binance-api-2.png') }}" width="65%" height="200">
+                            </section>
+
+                            <h2>Third Step</h2>
+                            <section>
+                                <p>
+                                    If you have built a successful application, you can see your keys.
+                                </p>
+                                <img src="{{ asset('assets/images/binance-api-3.png') }}" width="65%" height="200">
+                            </section>
+
+                            <h2>Forth Step</h2>
+                            <section>
+                                <p id="finish-text">
+                                    Congratulations! Click the <b>Finish</b> button for set your keys.
+                                </p>
+                                <div class="card" style="display: none">
+                                    <div class="header">
+                                        <h2>
+                                            BINANCE API KEYS
+                                        </h2>
+                                    </div>
+                                    <div class="body">
+                                        <form method="post" action="{{ path('post-key-add') }}">
+                                            <label for="api_key">Api Key</label>
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    <input type="text" id="binance-api-key" name="binance-api-key"
+                                                           class="form-control"
+                                                           placeholder="Enter your Binance api key">
+                                                </div>
+                                            </div>
+                                            <label for="secret_key">Secret Key</label>
+                                            <div class="form-group">
+                                                <div class="form-line">
+                                                    <input type="text" id="binance-secret-key" name="binance-secret-key"
+                                                           class="form-control"
+                                                           placeholder="Enter your Binance secret key">
+                                                </div>
+                                            </div>
+                                            <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <div class="card">
+                    <div class="header">
+                        <h2>
+                            BINANCE API KEYS
+                        </h2>
+                    </div>
+                    <div class="body">
+                        <form method="post" action="{{ path('post-key-add') }}">
+                            <label for="api_key">Api Key</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" id="binance-api-key" name="binance-api-key" class="form-control"
+                                           placeholder="Enter your Binance api key"
+                                           value="{{ app.user.binanceApiKey }}">
+                                </div>
+                            </div>
+                            <label for="secret_key">Secret Key</label>
+                            <div class="form-group">
+                                <div class="form-line">
+                                    <input type="text" id="binance-secret-key" name="binance-secret-key"
+                                           class="form-control"
+                                           placeholder="Enter your Binance secret key"
+                                           value="{{ app.user.binanceSecretKey }}">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}
+
+
+{% block javascripts %}
+    <script src="{{ asset("assets/plugins/jquery-validation/jquery.validate.js") }}"></script>
+    <script src="{{ asset("assets/plugins/jquery-steps/jquery.steps.js") }}"></script>
+    <script src="{{ asset("assets/plugins/sweetalert/sweetalert.min.js") }}"></script>
+    <script src="{{ asset("assets/js/pages/forms/form-wizard.js") }}"></script>
+    <script src="{{ asset("assets/js/demo.js") }}"></script>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            $('.waves-effect').on('click', function () {
+                if ($(this).text() == 'Finish') {
+                    $('#finish-text').hide();
+                    $('.card').show();
+                }
+            });
+        });
+    </script>
+{% endblock %}

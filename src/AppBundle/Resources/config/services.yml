@@ -1,0 +1,20 @@
+services:
+    AppBundle\Service\BinanceService:
+        arguments:
+            $binanceApi: 'Binance\API'
+            $binanceApiKey: '%binance_app_api_key%'
+            $binanceSecretKey: '%binance_app_secret_key%'
+            $tokenStorage: '@security.token_storage'
+            $entityManager: '@Doctrine\ORM\EntityManagerInterface'
+            $redisService: '@redis_service'
+
+    consumer.rule:
+        class: AppBundle\Consumer\RuleConsumer
+        arguments:
+            - '%binance_app_api_key%'
+            - '%binance_app_secret_key%'
+
+    redis_service:
+        class: AppBundle\Service\RedisService
+        arguments:
+            - '@doctrine_cache.providers.redis_cache'

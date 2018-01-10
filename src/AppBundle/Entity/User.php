@@ -42,6 +42,25 @@ class User implements UserInterface
      */
     private $createdAt;
 
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="binance_api_key", type="string", length=255, nullable=true)
+     */
+    private $binanceApiKey;
+
+    /**
+     * @var
+     * @ORM\Column(name="binance_secret_key", type="string", length=255, nullable=true)
+     */
+    private $binanceSecretKey;
+
+    /**
+     * @var
+     * @ORM\OneToMany(targetEntity="AppBundle\Entity\Rule", mappedBy="user")
+     */
+    private $rules;
+
 
     /**
      * Get id
@@ -167,5 +186,94 @@ class User implements UserInterface
     public function getCreatedAt()
     {
         return $this->createdAt;
+    }
+
+    /**
+     * Set binanceApiKey
+     *
+     * @param string $binanceApiKey
+     *
+     * @return User
+     */
+    public function setBinanceApiKey($binanceApiKey)
+    {
+        $this->binanceApiKey = $binanceApiKey;
+
+        return $this;
+    }
+
+    /**
+     * Get binanceApiKey
+     *
+     * @return string
+     */
+    public function getBinanceApiKey()
+    {
+        return $this->binanceApiKey;
+    }
+
+    /**
+     * Set binanceSecretKey
+     *
+     * @param string $binanceSecretKey
+     *
+     * @return User
+     */
+    public function setBinanceSecretKey($binanceSecretKey)
+    {
+        $this->binanceSecretKey = $binanceSecretKey;
+
+        return $this;
+    }
+
+    /**
+     * Get binanceSecretKey
+     *
+     * @return string
+     */
+    public function getBinanceSecretKey()
+    {
+        return $this->binanceSecretKey;
+    }
+    /**
+     * Constructor
+     */
+    public function __construct()
+    {
+        $this->rules = new \Doctrine\Common\Collections\ArrayCollection();
+    }
+
+    /**
+     * Add rule
+     *
+     * @param \AppBundle\Entity\Rule $rule
+     *
+     * @return User
+     */
+    public function addRule(\AppBundle\Entity\Rule $rule)
+    {
+        $this->rules[] = $rule;
+
+        return $this;
+    }
+
+    /**
+     * Remove rule
+     *
+     * @param \AppBundle\Entity\Rule $rule
+     */
+    public function removeRule(\AppBundle\Entity\Rule $rule)
+    {
+        $this->rules->removeElement($rule);
+    }
+
+    /**
+     * Get rules
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getRules()
+    {
+        return $this->rules;
     }
 }
