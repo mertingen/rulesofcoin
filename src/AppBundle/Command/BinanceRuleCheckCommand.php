@@ -29,14 +29,8 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                 if (isset($rules[$symbol])) {
                     foreach ($rules[$symbol] as $symbolRules) {
                         if ($trades['price'] <= $symbolRules['price']) {
-                            $userBinanceApi = new API(
-                                $symbolRules['binance_api_key'],
-                                $symbolRules['binance_secret_key']
-                            );
-                            $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
-                            $quantity = intval($btcAvailable / $trades['price']);
-                            $userBinanceApi->buy($symbol, $quantity, $trades['price']);
-                            echo PHP_EOL . $symbol . ' için emir girildi! RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            $this->buy($symbolRules, $symbol, $trades);
+                            echo PHP_EOL . '[' . $symbol . ']' . ' için emir girildi! RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         } else {
                             echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
@@ -70,6 +64,22 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
     public function getSymbols()
     {
         return $this->getRedisService()->get('symbols');
+    }
+
+    /**
+     * @param array $rule
+     * @param string $symbol
+     * @param array $trades
+     */
+    public function buy($rule = array(), $symbol = '', $trades = array())
+    {
+        $userBinanceApi = new API(
+            $rule['binance_api_key'],
+            $rule['binance_secret_key']
+        );
+        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
+        $quantity = intval($btcAvailable / $trades['price']);
+        $userBinanceApi->buy($symbol, $quantity, $trades['price']);
     }
 
 }

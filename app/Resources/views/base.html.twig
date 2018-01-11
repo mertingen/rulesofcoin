@@ -31,6 +31,10 @@
     <link href="{{ asset("assets/plugins/bootstrap-select/css/bootstrap-select.css") }}" rel="stylesheet">
 
     <link href="{{ asset("assets/css/themes/all-themes.css") }}" rel="stylesheet">
+
+    <link href="{{ asset("assets/css/iziToast.min.css") }}" rel="stylesheet">
+
+    <link href="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css") }}" rel="stylesheet">
     {% block stylesheets %}
     {% endblock %}
 </head>
@@ -63,7 +67,7 @@
             <a href="javascript:void(0);" class="navbar-toggle collapsed" data-toggle="collapse"
                data-target="#navbar-collapse" aria-expanded="false"></a>
             <a href="javascript:void(0);" class="bars" style="display:none;"></a>
-            <a class="navbar-brand" href="{{ path('homepage') }}">ADMINBSB - MATERIAL DESIGN</a>
+            <a class="navbar-brand" href="{{ path('homepage') }}">RULECHAIN</a>
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">
         </div>
@@ -103,7 +107,7 @@
                 </li>
                 <li>
                     <a href="javascript:void(0);" class="menu-toggle">
-                        <i class="material-icons">format_quote</i>
+                        <i class="material-icons">vpn_key</i>
                         <span>Keys</span>
                     </a>
                     <ul class="ml-menu">
@@ -129,7 +133,7 @@
                 </li>
                 <li>
                     <a href="javascript:void(0);" class="menu-toggle">
-                        <i class="material-icons">format_list_bulleted</i>
+                        <i class="material-icons">alarm</i>
                         <span>Rules</span>
                     </a>
                     <ul class="ml-menu">
@@ -196,6 +200,8 @@
 <script src="{{ asset("assets/plugins/sweetalert/sweetalert.min.js") }}"></script>
 
 <script src="{{ asset("assets/js/pages/forms/form-validation.js") }}"></script>
+
+<script src="{{ asset('assets/js/iziToast.min.js') }}" type="text/javascript"></script>
 
 <!-- Custom Js -->
 <script src="{{ asset("assets/js/admin.js") }}"></script>

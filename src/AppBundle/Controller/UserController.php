@@ -19,6 +19,9 @@ class UserController extends Controller
      */
     public function loginAction(Request $request, AuthenticationUtils $authenticationUtils)
     {
+        if ($this->getUser()) {
+            return $this->redirectToRoute('homepage');
+        }
         $errors = $authenticationUtils->getLastAuthenticationError();
         $lastUserName = $authenticationUtils->getLastUsername();
         return $this->render('@App/Login/login.html.twig',

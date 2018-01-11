@@ -5,20 +5,29 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Rule;
 use AppBundle\Entity\User;
 use AppBundle\Service\BinanceService;
-use AppBundle\Service\RedisService;
 use AppBundle\Service\UserService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
  * Class KeyController
  * @package AppBundle\Controller
  * @Route("/binance")
+ * @Security("has_role('ROLE_USER')")
  */
 class BinanceController extends Controller
 {
+    private $flashBag;
+
+    public function __construct(FlashBagInterface $flashBag)
+    {
+        $this->flashBag = $flashBag;
+    }
+
     /**
      * @Route("/coins", methods={"GET"}, name="binance-coin-list")
      * @param BinanceService $binanceService
@@ -27,10 +36,6 @@ class BinanceController extends Controller
     public function coinsAction(BinanceService $binanceService)
     {
         $coins = $binanceService->getCoins();
-        if (!$coins) {
-            dump('coins not valid!');
-            die;
-        }
         return $this->render('@App/Binance/Coin/list-coin.html.twig',
             array('coins' => $coins)
         );
@@ -40,14 +45,15 @@ class BinanceController extends Controller
      * @Route("/rule/{symbol}", methods={"GET"}, name="binance-add-rule")
      * @param null $symbol
      * @param BinanceService $binanceService
-     * @return \Symfony\Component\HttpFoundation\Response
+     * @param FlashBagInterface $flashBag
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
      */
-    public function addRuleAction($symbol = NULL, BinanceService $binanceService)
+    public function addRuleAction($symbol = NULL, BinanceService $binanceService, FlashBagInterface $flashBag)
     {
         $symbols = $this->get('redis_service')->get('symbols');
         if (!in_array($symbol, $symbols)) {
-            dump('symbol is not valid!');
-            die;
+            $this->flashBag->add('error', 'Symbol is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $where = array(
@@ -55,10 +61,9 @@ class BinanceController extends Controller
             'symbol' => $symbol
         );
 
-        $isRule = $binanceService->getRule($where);
-        if ($isRule) {
-            dump('Exist rule!');
-            die;
+        $isUserRule = $binanceService->getRule($where);
+        if ($isUserRule) {
+            return $this->redirectToRoute('binance-edit-rule', array('id' => $isUserRule->getId()));
         }
 
         $data = $binanceService->getCoins($symbol);
@@ -78,13 +83,14 @@ class BinanceController extends Controller
      * @param UserService $userService
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function postAddRuleAction($symbol = NULL, BinanceService $binanceService, Request $request, UserService $userService)
+    public
+    function postAddRuleAction($symbol = NULL, BinanceService $binanceService, Request $request, UserService $userService)
     {
         $symbols = $this->get('redis_service')->get('symbols');
 
         if (!in_array($symbol, $symbols)) {
-            dump('symbol is not valid!');
-            die;
+            $this->flashBag->add('error', 'Symbol is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $where = array(
@@ -94,27 +100,27 @@ class BinanceController extends Controller
 
         $isRule = $binanceService->getRule($where);
         if ($isRule) {
-            dump('Exist rule!');
-            die;
+            $this->flashBag->add('error', 'Rule is exist!');
         }
 
-        $price = $request->request->get('price', null);
+        $buyLimit = $request->request->get('buy-limit', null);
+        $stop = $request->request->get('stop', null);
 
-        if (empty($price)) {
-            dump('Price not found!');
-            die;
+        if (empty($buyLimit)) {
+            $this->flashBag->add('error', 'Buy limit is not found!');
         }
 
-        if (strlen($price) !== 10) {
-            dump('Price not valid!');
-            die;
+        if ($stop !== NULL && floatval($buyLimit) > floatval($stop)) {
+            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
         }
 
-        /*$isAddedRule = $binanceService->getRule(array('symbol' => $symbol, 'user' => $this->getUser()));
-        if ($isAddedRule) {
-            dump('Same rule found!');
-            die;
-        }*/
+        if (strlen($buyLimit) !== 10 || ($stop !== NULL && strlen($stop) !== 10)) {
+            $this->flashBag->add('error', 'Buy limit or Stop is not valid!');
+        }
+
+        if (!empty($this->flashBag->get('error'))) {
+            return $this->redirectToRoute('binance-coin-list');
+        }
 
         $user = $userService->get($this->getUser()->getId());
 
@@ -122,13 +128,15 @@ class BinanceController extends Controller
         $rule->setUser($user);
         $rule->setSymbol($symbol);
         $rule->setCreatedAt(new \DateTime());
-        $rule->setPrice($price);
+        $rule->setBuyLimit($buyLimit);
+        $rule->setStop($stop);
         $rule->setIsDone(false);
 
         $ruleId = $binanceService->upsertRule($rule)->getId();
 
         $binanceService->setRulesToRedis($user);
 
+        $this->flashBag->add('success', 'Rule is successfuly inserted!');
         return $this->redirectToRoute('binance-rule-list', array('id' => $user->getId()));
 
     }
@@ -139,24 +147,25 @@ class BinanceController extends Controller
      * @param BinanceService $binanceService
      * @return Response
      */
-    public function editRuleAction($id = NULL, BinanceService $binanceService)
+    public
+    function editRuleAction($id = NULL, BinanceService $binanceService)
     {
         if (!$id) {
-            dump('Rule Id not found!');
-            die;
+            $this->flashBag->add('error', 'Rule not found!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
 
         $symbols = $this->get('redis_service')->get('symbols');
         if (!in_array($rule->getSymbol(), $symbols)) {
-            dump('symbol is not valid!');
-            die;
+            $this->flashBag->add('error', 'Symbol is not valid!');
+            return $this->redirectToRoute('binance-add-rule');
         }
 
         if (!$rule) {
-            dump('Rule not found!');
-            die;
+            $this->flashBag->add('error', 'Rule is not found!');
+            return $this->redirectToRoute('binance-add-rule');
         }
 
         $data = $binanceService->getCoins($rule->getSymbol());
@@ -177,40 +186,46 @@ class BinanceController extends Controller
      * @param UserService $userService
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
      */
-    public function postEditRuleAction($id = NULL, BinanceService $binanceService, Request $request, UserService $userService)
+    public
+    function postEditRuleAction($id = NULL, BinanceService $binanceService, Request $request, UserService $userService)
     {
         if (!$id) {
-            dump('Rule Id not found!');
-            die;
+            $this->flashBag->add('error', 'Rule is not found!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
         if (!$rule) {
-            dump('Rule not found!');
-            die;
+            $this->flashBag->add('error', 'Rule is not found!');
         }
 
         $symbols = $this->get('redis_service')->get('symbols');
         if (!in_array($rule->getSymbol(), $symbols)) {
-            dump('symbol is not valid!');
-            die;
+            $this->flashBag->add('error', 'Symbol is not valid!');
         }
 
-        $price = $request->request->get('price', null);
-        if (!$price) {
-            dump('Price not found!');
-            die;
-        }
-        if (strlen($price) !== 10) {
-            dump('Price not valid!');
-            die;
+        $buyLimit = $request->request->get('buy-limit', null);
+        $stop = $request->request->get('stop', null);
+        if (!$buyLimit) {
+            $this->flashBag->add('error', 'Limit is not found!');
         }
 
-        $rule->setPrice($price);
+        if ($stop !== NULL && floatval($buyLimit) > floatval($stop)) {
+            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
+        }
+        if (strlen($buyLimit) !== 10 || ($stop !== NULL && strlen($stop) !== 10)) {
+            $this->flashBag->add('error', 'Buy Limit or Stop is not valid!');
+        }
+
+        if (!empty($this->flashBag->get('error'))) {
+            return $this->redirectToRoute('binance-coin-list');
+        }
+        $rule->setLimit($buyLimit);
         $binanceService->upsertRule($rule)->getId();
 
-        $binanceService->setRulesToRedis($userService->get(array('user' => $this->getUser())));
+        $binanceService->setRulesToRedis($userService->get($this->getUser()->getId()));
 
+        $this->flashBag->add('success', 'Rule is successfuly updated!');
         return $this->redirectToRoute('binance-rule-list', array('id' => $this->getUser()->getId()));
 
     }
@@ -221,7 +236,8 @@ class BinanceController extends Controller
      * @param BinanceService $binanceService
      * @return Response
      */
-    public function deleteRuleAction($id = NULL, BinanceService $binanceService)
+    public
+    function deleteRuleAction($id = NULL, BinanceService $binanceService)
     {
         if (!$id) {
             dump('Rule Id not found!');
@@ -243,9 +259,9 @@ class BinanceController extends Controller
         $this->get('redis_service')->insert('rules', $rules);
         $isDeleted = $binanceService->removeRule($rule);
         if (!$isDeleted) {
-            return new Response(json_encode(array('status' => false, 'message' => 'Unsuccessfully deleted.')), 404);
+            return new Response(json_encode(array('status' => false, 'message' => 'Unsuccessfully deleted . ')), 404);
         }
-        return new Response(json_encode(array('status' => true, 'message' => 'Successfully deleted.')), 200);
+        return new Response(json_encode(array('status' => true, 'message' => 'Successfully deleted . ')), 200);
     }
 
     /**
@@ -254,17 +270,19 @@ class BinanceController extends Controller
      * @param BinanceService $binanceService
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function listRuleAction(User $user, BinanceService $binanceService)
+    public
+    function listRuleAction(User $user, BinanceService $binanceService)
     {
         if (!$user || $user->getId() != $this->getUser()->getId()) {
-            dump('User not found!');
-            die;
+            $this->flashBag->add('error', 'User is not found!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
+        $coins = $binanceService->getCoins();
         $rules = $binanceService->getRules(array('user' => $this->getUser()));
 
         return $this->render('@App/Binance/Rule/list-rule.html.twig',
-            array('rules' => $rules)
+            array('rules' => $rules, 'coins' => $coins)
         );
 
     }

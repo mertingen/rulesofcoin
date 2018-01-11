@@ -3,14 +3,17 @@
 namespace AppBundle\Controller;
 
 use AppBundle\Service\UserService;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
  * Class KeyController
  * @package AppBundle\Controller
  * @Route("/key")
+ * @Security("has_role('ROLE_USER')")
  */
 class KeyController extends Controller
 {
@@ -26,29 +29,21 @@ class KeyController extends Controller
     /**
      * @param Request $request
      * @param UserService $userService
-     * @Route("add", methods={"POST"}, name="post-key-add")
+     * @param FlashBagInterface $flashBag
      * @return \Symfony\Component\HttpFoundation\RedirectResponse
+     * @Route("add", methods={"POST"}, name="post-key-add")
      */
-    public function postUpsertAction(Request $request, UserService $userService)
+    public function postUpsertAction(Request $request, UserService $userService, FlashBagInterface $flashBag)
     {
         $binanceApiKey = $request->request->get('binance-api-key');
         $binanceSecretKey = $request->request->get('binance-secret-key');
 
-        if (empty($binanceApiKey) || empty($binanceSecretKey)) {
-            dump('keys not valid!');
-            die;
-        }
-
-        if (strlen($binanceApiKey) != 64 || strlen($binanceSecretKey) != 64) {
-            dump('keys not valid!');
-            die;
+        if (empty($binanceApiKey) || empty($binanceSecretKey) || strlen($binanceApiKey) != 64 || strlen($binanceSecretKey) != 64) {
+            $flashBag->add('error', 'Keys are not valid!');
+            return $this->redirectToRoute('key-add');
         }
 
         $user = $userService->get($this->getUser()->getId());
-        if (!$user) {
-            dump('user not found!');
-            die;
-        }
         $user->setBinanceApiKey($binanceApiKey);
         $user->setBinanceSecretKey($binanceSecretKey);
 

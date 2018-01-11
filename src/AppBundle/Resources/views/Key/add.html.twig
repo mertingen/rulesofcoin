@@ -89,7 +89,7 @@
                             <label for="api_key">Api Key</label>
                             <div class="form-group">
                                 <div class="form-line">
-                                    <input type="text" id="binance-api-key" name="binance-api-key" class="form-control"
+                                    <input type="{{ (app.user.binanceApiKey) ? 'password' : 'text' }}" id="binance-api-key" name="binance-api-key" class="form-control"
                                            placeholder="Enter your Binance api key"
                                            required
                                            value="{{ app.user.binanceApiKey }}">
@@ -98,7 +98,7 @@
                             <label for="secret_key">Secret Key</label>
                             <div class="form-group">
                                 <div class="form-line">
-                                    <input type="text" id="binance-secret-key" name="binance-secret-key"
+                                    <input type="{{ (app.user.binanceSecretKey) ? 'password' : 'text' }}" id="binance-secret-key" name="binance-secret-key"
                                            class="form-control"
                                            placeholder="Enter your Binance secret key"
                                            value="{{ app.user.binanceSecretKey }}" required>
@@ -129,6 +129,24 @@
                     $('.card').show();
                 }
             });
+
+            {% for label, messages in app.flashes(['success']) %}
+            {% for message in messages %}
+            iziToast.success({
+                title: 'SUCCESS',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
+
+            {% for label, messages in app.flashes(['error']) %}
+            {% for message in messages %}
+            iziToast.error({
+                title: 'ERROR',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
         });
     </script>
 {% endblock %}

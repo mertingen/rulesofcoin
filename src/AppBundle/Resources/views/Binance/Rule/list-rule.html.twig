@@ -4,53 +4,68 @@
 
     <div class="row clearfix">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+
             <div class="card">
                 <div class="header">
                     <h2>
                         Rule Table
                     </h2>
                 </div>
-                <div class="body table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>#</th>
-                            <th>Symbol</th>
-                            <th>Price</th>
-                            <th>Is Done</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% set counter = 1 %}
-                        {% for rule in rules %}
-                            <tr class="list-item-block">
-                                <th scope="row">{{ counter }}</th>
-                                <td>{{ rule.symbol }}</td>
-                                <td>{{ rule.price }}</td>
-                                <td>
-                                    {% if rule.isDone %}
-                                        <i class="material-icons">done</i>
-                                    {% else %}
-                                        <i class="material-icons">error_outline</i>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <a data-toggle="confirmation"
-                                       href="{{ path('binance-edit-rule', {id: rule.id}) }}"
-                                       class="btn fancybox default edit btn-xs green"
-                                       title="Edit"><i class="material-icons">edit</i></a>
-                                    <a data-toggle="confirmation"
-                                       href="{{ path('binance-delete-rule', {id: rule.id}) }}"
-                                       data-type="confirm"
-                                       class="btn fancybox default delete btn-xs green"
-                                       title="Delete"><i class="material-icons">delete</i></a>
-                                </td>
+                <div class="body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                            <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Symbol</th>
+                                <th>Limit</th>
+                                <th>Current Price</th>
+                                <th>Is Done</th>
+                                <th>Actions</th>
                             </tr>
-                            {% set counter = counter + 1 %}
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>#</th>
+                                <th>Symbol</th>
+                                <th>Limit</th>
+                                <th>Current Price</th>
+                                <th>Is Done</th>
+                                <th>Actions</th>
+                            </tr>
+                            </tfoot>
+                            <tbody>
+                            {% set counter = 1 %}
+                            {% for rule in rules %}
+                                <tr class="list-item-block">
+                                    <th scope="row">{{ counter }}</th>
+                                    <td>{{ rule.symbol }}</td>
+                                    <td>{{ rule.buyLimit }}</td>
+                                    <td id="{{ rule.symbol | lower }}"></td>
+                                    <td>
+                                        {% if rule.isDone %}
+                                            <i class="material-icons">done</i>
+                                        {% else %}
+                                            <i class="material-icons">error_outline</i>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a data-toggle="confirmation"
+                                           href="{{ path('binance-edit-rule', {id: rule.id}) }}"
+                                           class="btn fancybox default edit btn-xs green"
+                                           title="Edit"><i class="material-icons">edit</i></a>
+                                        <a data-toggle="confirmation"
+                                           href="{{ path('binance-delete-rule', {id: rule.id}) }}"
+                                           data-type="confirm"
+                                           class="btn fancybox default delete btn-xs green"
+                                           title="Delete"><i class="material-icons">delete</i></a>
+                                    </td>
+                                </tr>
+                                {% set counter = counter + 1 %}
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -64,9 +79,40 @@
 
 
     {% block javascripts %}
-        <script src="{{ asset('assets/js/iziToast.min.js') }}" type="text/javascript"></script>
+        <script src="{{ asset("assets/plugins/jquery-datatable/jquery.dataTables.js") }}"></script>
+        <script src="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js") }}"></script>
+        <script src="{{ asset("assets/js/pages/tables/jquery-datatable.js") }}"></script>
         <script type="text/javascript">
             $(document).ready(function () {
+
+                var coins = {{ coins | json_encode | raw }};
+                var prices = [];
+                $.each(coins, function (key, value) {
+                    $('#' + key.toLowerCase()).text(value);
+                    var url = "wss://stream.binance.com:9443/ws/" + key.toLowerCase() + "@aggTrade";
+                    w = new WebSocket(url);
+                    w.onopen = function () {
+                        //console.log('OPENED!');
+                    };
+                    w.onmessage = function (e) {
+                        var data = JSON.parse(e.data.toString());
+                        if (!prices[key]) {
+                            prices[key] = data.p;
+                        } else {
+                            if (prices[key] > data.p) {
+                                $('#' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
+                            } else {
+                                $('#' + key.toLowerCase()).text(data.p).css('color', '#39FD32');
+                            }
+                        }
+                    };
+                });
+
+
+
+
+
+
                 $('.delete').click(function (event) {
                     event.preventDefault();
                     var targetElem = $(this);

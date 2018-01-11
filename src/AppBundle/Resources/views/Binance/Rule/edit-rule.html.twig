@@ -16,16 +16,25 @@
                 <div class="body">
                     <form id="form_advanced_validation" method="post"
                           action="{{ path('binance-post-edit-rule', {id: rule.id}) }}">
-                        <label for="api_key">Btc Price</label>
+                        <label>Buy Limit</label>
                         <div class="form-group form-float">
                             <div class="form-line">
-                                <input type="text" class="form-control" id="rule-price"
-                                       placeholder="{{ data['price'] }}" name="price" value="{{ data['price'] }}"
+                                <input type="number" class="form-control" id="buy-rule-limit"
+                                       placeholder="{{ rule.buyLimit }}" name="buy-limit" value="{{ rule.buyLimit }}"
                                        maxlength="10"
                                        minlength="10"
                                        required>
                             </div>
-                            <div class="help-info">10 characters</div>
+                            <div class="help-info">Limit rule to be purchased.</div>
+                        </div>
+                        <label>Stop</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="number" class="form-control" id="rule-stop"
+                                       placeholder="{{ rule.stop }}" name="stop" value="{{ rule.stop }}" maxlength="10"
+                                       minlength="10">
+                            </div>
+                            <div class="help-info">If limit rule not to be, stop to be purchased.</div>
                         </div>
                         <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
                         </button>
@@ -64,8 +73,27 @@
             };
 
             $(".live-price").click(function () {
-                $("#rule-price").val($(this).text());
+                $("#buy-rule-limit").val($(this).text());
+                $("#rule-stop").val($(this).text());
             });
+
+            {% for label, messages in app.flashes(['success']) %}
+            {% for message in messages %}
+            iziToast.success({
+                title: 'SUCCESS',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
+
+            {% for label, messages in app.flashes(['error']) %}
+            {% for message in messages %}
+            iziToast.error({
+                title: 'ERROR',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
         });
     </script>
 {% endblock %}

@@ -117,7 +117,8 @@ class BinanceService
         foreach ($rules as $rule) {
             $data[$rule->getSymbol()][] = array(
                 'ruleId' => $rule->getId(),
-                'price' => $rule->getPrice(),
+                'buyLimit' => $rule->getBuyLimit(),
+                'stop' => $rule->getStop(),
                 'binance_api_key' => $user->getBinanceApiKey(),
                 'binance_secret_key' => $user->getBinanceSecretKey()
             );

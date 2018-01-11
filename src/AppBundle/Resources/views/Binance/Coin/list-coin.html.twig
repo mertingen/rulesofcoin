@@ -1,5 +1,4 @@
 {% extends 'base.html.twig' %}
-
 {% block body %}
     <div class="row clearfix">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
@@ -67,6 +66,26 @@
                     }
                 };
             });
+
+            {% for label, messages in app.flashes(['success']) %}
+            {% for message in messages %}
+            iziToast.success({
+                title: 'SUCCESS',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
+
+            {% for label, messages in app.flashes(['error']) %}
+            {% for message in messages %}
+            iziToast.error({
+                title: 'ERROR',
+                message: "{{ message }}"
+            });
+            {% endfor %}
+            {% endfor %}
+
+
         });
     </script>
 {% endblock %}
