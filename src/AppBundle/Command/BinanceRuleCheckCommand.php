@@ -27,12 +27,21 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
             $binanceApi->trades($symbols, function ($api, $symbol, $trades) {
                 $rules = $this->getRedisService()->get('rules');
                 if (isset($rules[$symbol])) {
-                    foreach ($rules[$symbol] as $symbolRules) {
-                        if ($trades['price'] <= $symbolRules['price']) {
-                            $this->buy($symbolRules, $symbol, $trades);
-                            echo PHP_EOL . '[' . $symbol . ']' . ' için emir girildi! RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                    foreach ($rules[$symbol] as &$symbolRule) {
+                        if ($trades['buyLimit'] <= $symbolRule['price']) {
+                            $this->buy($symbolRule, $symbol, $trades);
+                            echo PHP_EOL . '[' . $symbol . ']' . ' için emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+
+                        } elseif (isset($symbolRule['stop']) && is_numeric($symbolRule['stop'])) {
+                            if ($trades['stop'] < $trades['price']) {
+                                if (!array_key_exists('activeStop', $symbolRule)) {
+                                    $symbolRule['activeStop'] = true;
+                                }
+                            } elseif ((array_key_exists('activeStop', $symbolRule) && $symbolRule['activeStop']) && $symbolRule['stop'] == $trades['price']) {
+                                $this->buy($symbolRule, $symbol, $trades);
+                            }
                         } else {
-                            echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRules['price'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
                     }
                 }

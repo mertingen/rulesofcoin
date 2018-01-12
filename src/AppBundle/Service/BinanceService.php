@@ -110,6 +110,9 @@ class BinanceService
         return true;
     }
 
+    /**
+     * @param User $user
+     */
     public function setRulesToRedis(User $user)
     {
         $rules = $this->getRules();
