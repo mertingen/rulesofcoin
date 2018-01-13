@@ -14,7 +14,7 @@
 
                 </div>
                 <div class="body">
-                    <form id="form_advanced_validation" method="post"
+                    <form id="form_advanced_validation" class="rule-form" method="post"
                           action="{{ path('binance-post-edit-rule', {id: rule.id}) }}">
                         <label>Buy Limit</label>
                         <div class="form-group form-float">
@@ -34,9 +34,9 @@
                                        placeholder="{{ rule.stop }}" name="stop" value="{{ rule.stop }}" maxlength="10"
                                        minlength="10">
                             </div>
-                            <div class="help-info">If limit rule not to be, stop to be purchased.</div>
+                            <div class="help-info">(Optional)</div>
                         </div>
-                        <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
+                        <button type="submit" id="save" class="btn btn-primary m-t-15 waves-effect">SAVE
                         </button>
                     </form>
                 </div>
@@ -72,9 +72,61 @@
                 }
             };
 
+            $('#buy-rule-limit').on('input', function (e) {
+                var buyLimit = $(this).val();
+                var limit = parseInt($(this).attr('maxlength'));
+                var chars = buyLimit.length;
+                if (chars > limit) {
+                    var new_text = buyLimit.substr(0, limit);
+                    $(this).val(new_text);
+                } else {
+                    var quantity = $('#quantity').val();
+                    if (quantity !== '' && buyLimit !== '') {
+                        var result = quantity * buyLimit;
+                        $('#btc-price').val(result.toFixed(8));
+                    }
+                }
+            });
+
+            $('#quantity').on('input', function (e) {
+                var quantity = $(this).val();
+                var buyLimit = $('#buy-rule-limit').val();
+                if (quantity !== '' && buyLimit !== '') {
+                    var result = quantity * buyLimit;
+                    $('#btc-price').val(result.toFixed(8));
+                }
+            });
+
+            $('#btc-price').on('input', function (e) {
+                var btcPrice = $(this).val();
+                var limit = parseInt($(this).attr('maxlength'));
+                var chars = btcPrice.length;
+                if (chars > limit) {
+                    var new_text = btcPrice.substr(0, limit);
+                    $(this).val(new_text);
+                } else {
+                    var buyLimit = $('#buy-rule-limit').val();
+                    if (btcPrice !== '' && buyLimit !== '') {
+                        var result = btcPrice / buyLimit;
+                        $('#quantity').val(result.toFixed(8));
+                    }
+                }
+            });
+
+            $('#save').click(function (e) {
+                e.preventDefault();
+                if ($('#btc-price').val() < 0.00010000) {
+                    iziToast.error({
+                        title: 'ERROR',
+                        message: "Btc Price or Buy Limit not valid!"
+                    });
+                    return false;
+                }
+                $('.rule-form').submit();
+            });
+
             $(".live-price").click(function () {
                 $("#buy-rule-limit").val($(this).text());
-                $("#rule-stop").val($(this).text());
             });
 
             {% for label, messages in app.flashes(['success']) %}

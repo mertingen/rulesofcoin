@@ -27,19 +27,18 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
             $binanceApi->trades($symbols, function ($api, $symbol, $trades) {
                 $rules = $this->getRedisService()->get('rules');
                 if (isset($rules[$symbol])) {
-                    foreach ($rules[$symbol] as &$symbolRule) {
+                    foreach ($rules[$symbol] as $symbolKey => &$symbolRule) {
                         if ($trades['buyLimit'] <= $symbolRule['price']) {
-                            $this->buy($symbolRule, $symbol, $trades);
-                            echo PHP_EOL . '[' . $symbol . ']' . ' için emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
-
-                        } elseif (isset($symbolRule['stop']) && is_numeric($symbolRule['stop'])) {
-                            if ($trades['stop'] < $trades['price']) {
-                                if (!array_key_exists('activeStop', $symbolRule)) {
-                                    $symbolRule['activeStop'] = true;
-                                }
-                            } elseif ((array_key_exists('activeStop', $symbolRule) && $symbolRule['activeStop']) && $symbolRule['stop'] == $trades['price']) {
+                            if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop'])) {
+                                $isStop = true;
+                                $this->buy($symbolRule, $symbol, $trades, $isStop);
+                                echo PHP_EOL . '[' . $symbol . ']' . ' için  STOP-LIMIT emir girildi! RULE: ' . $symbolRule['stop'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            } else {
                                 $this->buy($symbolRule, $symbol, $trades);
+                                echo PHP_EOL . '[' . $symbol . ']' . ' için  LIMIT emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                             }
+                            unset($rules[$symbolKey]);
+                            $this->getRedisService()->insert('rules', $rules);
                         } else {
                             echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
@@ -59,6 +58,11 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
         return $this->getContainer()->get('redis_service');
     }
 
+    public function getMqProducer()
+    {
+        return $this->getContainer()->get('old_sound_rabbit_mq.rule_consumer');
+    }
+
     /**
      * @return mixed
      */
@@ -75,20 +79,36 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
         return $this->getRedisService()->get('symbols');
     }
 
+
     /**
      * @param array $rule
      * @param string $symbol
      * @param array $trades
+     * @param bool $isStop
      */
-    public function buy($rule = array(), $symbol = '', $trades = array())
+    public function buy($rule = array(), $symbol = '', $trades = array(), $isStop = false)
     {
         $userBinanceApi = new API(
             $rule['binance_api_key'],
             $rule['binance_secret_key']
         );
-        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
-        $quantity = intval($btcAvailable / $trades['price']);
-        $userBinanceApi->buy($symbol, $quantity, $trades['price']);
+        //$btcAvailable = $userBinanceApi->balances()['BTC']['available'];
+        $quantity = intval($rule['btcPrice'] / $trades['price']);
+        if ($isStop) {
+            $result = $userBinanceApi->buy($symbol, $quantity, $rule['stop']);
+        } else {
+            $result = $userBinanceApi->buy($symbol, $quantity, $trades['price']);
+        }
+        if (is_array($result)) {
+            $order = array(
+                $rule['ruleId'] = array(
+                    'orderId' => $result['orderId'],
+                    'clientOrderId' => $result['clientOrderId'],
+                    'createdAt' => new \DateTime()
+                )
+            );
+            $this->getMqProducer()->publish(serialize($order));
+        }
     }
 
 }

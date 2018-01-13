@@ -9,81 +9,47 @@
 namespace AppBundle\Consumer;
 
 
-use AppBundle\Service\RedisService;
-use Binance\API;
+use AppBundle\Entity\Bid;
+use AppBundle\Service\BinanceService;
+use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
 
 class RuleConsumer implements ConsumerInterface
 {
-    private $binanceApi;
-    private $rule;
-    private $redisService;
+    private $entityManager;
+    private $binanceService;
 
     /**
      * RuleConsumer constructor.
-     * @param $binanceApiKey
-     * @param $binanceSecretKey
-     * @param RedisService $redisService
+     * @param EntityManagerInterface $entityManager
+     * @param BinanceService $binanceService
      */
-    public function __construct($binanceApiKey, $binanceSecretKey, RedisService $redisService)
+    public function __construct(EntityManagerInterface $entityManager, BinanceService $binanceService)
     {
-        $this->binanceApi = new API($binanceApiKey, $binanceSecretKey);
-        $this->redisService = $redisService;
+        $this->entityManager = $entityManager;
+        $this->binanceService = $binanceService;
+
     }
 
     public function execute(AMQPMessage $data)
     {
-        /*try {
-            $rule = unserialize($data->body);
-            $this->setRules($rule),
-            $rules = $this->getRules();
-            $symbols = $this->getSymbols();
-            $this->binanceApi->trades($symbols, function ($api, $symbol, $trades) {
-                $rules = $this->getRules();
-                if ($trades['price'] <= $rule['price']) {
-                    //echo 'SUCCESS! Rule price -> ' . $rule['price'] . ' Trade price -> ' . $trades['price'];
-                } else {
-                    //echo 'NOW PRICE -> ' . $trades['price'] . PHP_EOL;
-                }
-            });
-        } catch (\Exception $e) {
-            echo $e->getMessage();
-            die;
-        }*/
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getSymbols()
-    {
-        return $this->redisService->get('symbols');
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getRules()
-    {
-        return $this->redisService->get('rules');
-    }
-
-    /**
-     * @param $rule
-     */
-    public function setRules($rule)
-    {
-        /*$rules = $this->getRules();
-        if (is_array($rules)) {
-            $data = array();
-            foreach ($rules as $symbol => $ruleData) {
-                $data[$symbol][] = array(
-                    'ruleId' => $rule['ruleId'],
-                    'price' => $rule['price']
-                );
+        try {
+            $bid = unserialize($data->body);
+            if (is_array($bid) && !empty($bid)) {
+                $newBid = new Bid();
+                $newBid->setOrderId($bid['orderId']);
+                $newBid->setClientOrderId($bid['clientOrderId']);
+                $newBid->setCreatedAt(new \DateTime());
+                $rule = $this->binanceService->getRule(array('id' => $bid['ruleId']));
+                $newBid->setRule($rule);
+                $newBid->setStatus('NEW');
+                $this->entityManager->persist($newBid);
+                $this->entityManager->flush();
             }
-            $this->redisService->insert('rules', $rules);
-        }*/
+        } catch (\Exception $exception) {
+            echo $exception->getMessage();
+            die;
+        }
     }
 }

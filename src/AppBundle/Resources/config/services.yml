@@ -11,8 +11,8 @@ services:
     consumer.rule:
         class: AppBundle\Consumer\RuleConsumer
         arguments:
-            - '%binance_app_api_key%'
-            - '%binance_app_secret_key%'
+            - '@doctrine.orm.entity_manager'
+            - '@AppBundle\Service\BinanceService'
 
     redis_service:
         class: AppBundle\Service\RedisService

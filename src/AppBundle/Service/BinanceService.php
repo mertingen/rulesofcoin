@@ -43,7 +43,7 @@ class BinanceService
      * @param null $symbol
      * @return array|bool
      */
-    public function getCoins($symbol = NULL)
+    public function getCoinsWithPrices($symbol = NULL)
     {
         $coins = $this->binanceApi->prices();
         if ($symbol !== NULL && isset($coins[$symbol])) {
@@ -117,16 +117,57 @@ class BinanceService
     {
         $rules = $this->getRules();
         $data = array();
+        /**
+         * @var $rule Rule
+         */
         foreach ($rules as $rule) {
             $data[$rule->getSymbol()][] = array(
                 'ruleId' => $rule->getId(),
                 'buyLimit' => $rule->getBuyLimit(),
                 'stop' => $rule->getStop(),
                 'binance_api_key' => $user->getBinanceApiKey(),
-                'binance_secret_key' => $user->getBinanceSecretKey()
+                'binance_secret_key' => $user->getBinanceSecretKey(),
+                'btcPrice' => $rule->getBtcPrice()
             );
         }
         $this->redisService->insert('rules', $data);
+
+    }
+
+    public function getUserBtcPrice(User $user)
+    {
+        $userBinanceApi = new API(
+            $user->getBinanceApiKey(),
+            $user->getBinanceSecretKey()
+        );
+        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
+        return $btcAvailable;
+    }
+
+    /**
+     * @param User $user
+     * @param int $price
+     * @param string $symbol
+     * @return array
+     */
+    public function getSymbolQuantityByBtc(User $user, $price = 0, $symbol = '')
+    {
+        $userBinanceApi = new API(
+            $user->getBinanceApiKey(),
+            $user->getBinanceSecretKey()
+        );
+        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
+        $quantity = intval($btcAvailable / $price);
+        return $quantity;
+    }
+
+    /**
+     * @param $price
+     * @return string
+     */
+    public function getBtcNumberFormat($price)
+    {
+        return number_format($price, 8, '.', '');
 
     }
 

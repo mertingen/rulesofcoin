@@ -35,7 +35,7 @@ class BinanceController extends Controller
      */
     public function coinsAction(BinanceService $binanceService)
     {
-        $coins = $binanceService->getCoins();
+        $coins = $binanceService->getCoinsWithPrices();
         return $this->render('@App/Binance/Coin/list-coin.html.twig',
             array('coins' => $coins)
         );
@@ -66,7 +66,10 @@ class BinanceController extends Controller
             return $this->redirectToRoute('binance-edit-rule', array('id' => $isUserRule->getId()));
         }
 
-        $data = $binanceService->getCoins($symbol);
+        $data = $binanceService->getCoinsWithPrices($symbol);
+        $data['quantity'] = $binanceService->getSymbolQuantityByBtc($this->getUser(), $data['price'], $data['symbol']);
+        $data['btcPrice'] = $binanceService->getUserBtcPrice($this->getUser());
+
 
         return $this->render('@App/Binance/Rule/add-rule.html.twig',
             array(
@@ -101,24 +104,47 @@ class BinanceController extends Controller
         $isRule = $binanceService->getRule($where);
         if ($isRule) {
             $this->flashBag->add('error', 'Rule is exist!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $buyLimit = $request->request->get('buy-limit', null);
         $stop = $request->request->get('stop', null);
+        $btcPrice = $request->request->get('btc-price', null);
+        $quantity = $request->request->get('quantity', null);
 
         if (empty($buyLimit)) {
             $this->flashBag->add('error', 'Buy limit is not found!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
-        if ($stop !== NULL && floatval($buyLimit) > floatval($stop)) {
+        if (empty($btcPrice)) {
+            $this->flashBag->add('error', 'Btc price not found!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        if (empty($quantity) && !is_numeric($quantity) && $quantity > 0) {
+            $this->flashBag->add('error', 'Quantity is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        $btcPrice = $binanceService->getBtcNumberFormat(floatval($btcPrice));
+        $buyLimit = $binanceService->getBtcNumberFormat(floatval($buyLimit));
+        if (isset($stop)) {
+            $stop = $binanceService->getBtcNumberFormat(floatval($stop));
+        }
+
+        if ($btcPrice < 0.00010000) {
+            $this->flashBag->add('error', 'Btc Price should bigger 0.0001');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        if ($stop !== NULL && floatval($stop) > floatval($buyLimit)) {
             $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
-        if (strlen($buyLimit) !== 10 || ($stop !== NULL && strlen($stop) !== 10)) {
+        if ((strlen($buyLimit) !== 10 && $buyLimit < 0) || ($stop !== NULL && (strlen($stop) !== 10) || $stop < 0)) {
             $this->flashBag->add('error', 'Buy limit or Stop is not valid!');
-        }
-
-        if (!empty($this->flashBag->get('error'))) {
             return $this->redirectToRoute('binance-coin-list');
         }
 
@@ -130,6 +156,8 @@ class BinanceController extends Controller
         $rule->setCreatedAt(new \DateTime());
         $rule->setBuyLimit($buyLimit);
         $rule->setStop($stop);
+        $rule->setQuantity($quantity);
+        $rule->setBtcPrice($btcPrice);
         $rule->setIsDone(false);
 
         $ruleId = $binanceService->upsertRule($rule)->getId();
@@ -168,7 +196,7 @@ class BinanceController extends Controller
             return $this->redirectToRoute('binance-add-rule');
         }
 
-        $data = $binanceService->getCoins($rule->getSymbol());
+        $data = $binanceService->getCoinsWithPrices($rule->getSymbol());
 
         return $this->render('@App/Binance/Rule/edit-rule.html.twig',
             array(
@@ -197,30 +225,65 @@ class BinanceController extends Controller
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
         if (!$rule) {
             $this->flashBag->add('error', 'Rule is not found!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $symbols = $this->get('redis_service')->get('symbols');
         if (!in_array($rule->getSymbol(), $symbols)) {
             $this->flashBag->add('error', 'Symbol is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $buyLimit = $request->request->get('buy-limit', null);
+        $btcPrice = $request->request->get('btc-price', null);
+        $quantity = $request->request->get('quantity', null);
+
         $stop = $request->request->get('stop', null);
         if (!$buyLimit) {
             $this->flashBag->add('error', 'Limit is not found!');
-        }
-
-        if ($stop !== NULL && floatval($buyLimit) > floatval($stop)) {
-            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
-        }
-        if (strlen($buyLimit) !== 10 || ($stop !== NULL && strlen($stop) !== 10)) {
-            $this->flashBag->add('error', 'Buy Limit or Stop is not valid!');
-        }
-
-        if (!empty($this->flashBag->get('error'))) {
             return $this->redirectToRoute('binance-coin-list');
         }
+
+        if (empty($btcPrice)) {
+            $this->flashBag->add('error', 'Btc price not found!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+
+        if (empty($quantity) && !is_numeric($quantity) && $quantity > 0) {
+            $this->flashBag->add('error', 'Quantity is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        $btcPrice = $binanceService->getBtcNumberFormat(floatval($btcPrice));
+        $buyLimit = $binanceService->getBtcNumberFormat(floatval($buyLimit));
+        if (isset($stop)) {
+            $stop = $binanceService->getBtcNumberFormat(floatval($stop));
+        }
+
+        if ($btcPrice < 0.00010000) {
+            $this->flashBag->add('error', 'Btc Price should bigger 0.0001');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        if ($stop !== NULL && floatval($stop) > floatval($buyLimit)) {
+            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+        if ((strlen($buyLimit) !== 10 && $buyLimit < 0) || ($stop !== NULL && (strlen($stop) !== 10) || $stop < 0)) {
+            $this->flashBag->add('error', 'Buy Limit or Stop is not valid!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        $btcPrice = $binanceService->getBtcNumberFormat($btcPrice);
+        $buyLimit = $binanceService->getBtcNumberFormat($buyLimit);
+        if (isset($stop)) {
+            $stop = $binanceService->getBtcNumberFormat($stop);
+        }
+        $rule->setBtcPrice($btcPrice);
+        $rule->setStop($stop);
         $rule->setLimit($buyLimit);
+        $rule->setQuantity($quantity);
         $binanceService->upsertRule($rule)->getId();
 
         $binanceService->setRulesToRedis($userService->get($this->getUser()->getId()));
@@ -278,7 +341,7 @@ class BinanceController extends Controller
             return $this->redirectToRoute('binance-coin-list');
         }
 
-        $coins = $binanceService->getCoins();
+        $coins = $binanceService->getCoinsWithPrices();
         $rules = $binanceService->getRules(array('user' => $this->getUser()));
 
         return $this->render('@App/Binance/Rule/list-rule.html.twig',
