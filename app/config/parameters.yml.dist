@@ -29,6 +29,9 @@ parameters:
     redis_cache_port: 6379
     redis_cache_keyspace: rule
 
+    twitter_consumer_key: ~
+    twitter_secret_key: ~
+
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
 

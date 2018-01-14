@@ -28,8 +28,10 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                 $rules = $this->getRedisService()->get('rules');
                 if (isset($rules[$symbol])) {
                     foreach ($rules[$symbol] as $symbolKey => &$symbolRule) {
-                        if ($trades['buyLimit'] <= $symbolRule['price']) {
-                            if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop'])) {
+                        if ($trades['price'] <= $symbolRule['buyLimit']) {
+                            unset($rules[$symbolKey]);
+                            $this->getRedisService()->insert('rules', $rules);
+                            if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop']) && $symbolRule['stop'] > 0) {
                                 $isStop = true;
                                 $this->buy($symbolRule, $symbol, $trades, $isStop);
                                 echo PHP_EOL . '[' . $symbol . ']' . ' için  STOP-LIMIT emir girildi! RULE: ' . $symbolRule['stop'] . ' PRICE:' . $trades['price'] . PHP_EOL;
@@ -37,8 +39,6 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                                 $this->buy($symbolRule, $symbol, $trades);
                                 echo PHP_EOL . '[' . $symbol . ']' . ' için  LIMIT emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                             }
-                            unset($rules[$symbolKey]);
-                            $this->getRedisService()->insert('rules', $rules);
                         } else {
                             echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
@@ -100,14 +100,18 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
             $result = $userBinanceApi->buy($symbol, $quantity, $trades['price']);
         }
         if (is_array($result)) {
-            $order = array(
-                $rule['ruleId'] = array(
-                    'orderId' => $result['orderId'],
-                    'clientOrderId' => $result['clientOrderId'],
-                    'createdAt' => new \DateTime()
-                )
-            );
-            $this->getMqProducer()->publish(serialize($order));
+            if (array_key_exists('code', $result) && intval($result) < 0) {
+                echo '[ERROR] -> ' . $result['msg'] . PHP_EOL;
+            } else {
+                $order = array(
+                    $rule['ruleId'] = array(
+                        'orderId' => $result['orderId'],
+                        'clientOrderId' => $result['clientOrderId'],
+                        'createdAt' => new \DateTime()
+                    )
+                );
+                $this->getMqProducer()->publish(serialize($order));
+            }
         }
     }
 

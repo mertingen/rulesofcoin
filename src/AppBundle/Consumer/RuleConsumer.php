@@ -41,9 +41,13 @@ class RuleConsumer implements ConsumerInterface
                 $newBid->setOrderId($bid['orderId']);
                 $newBid->setClientOrderId($bid['clientOrderId']);
                 $newBid->setCreatedAt(new \DateTime());
+
                 $rule = $this->binanceService->getRule(array('id' => $bid['ruleId']));
+                $rule->setIsDone(true);
+
                 $newBid->setRule($rule);
                 $newBid->setStatus('NEW');
+                $this->entityManager->persist($rule);
                 $this->entityManager->persist($newBid);
                 $this->entityManager->flush();
             }

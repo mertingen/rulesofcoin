@@ -80,13 +80,22 @@ old_sound_rabbit_mq:
         rule:
             connection:        default
             exchange_options:  {name: 'rule', type: direct}
+        order:
+            connection:        default
+            exchange_options:  {name: 'order', type: direct}
     consumers:
         rule:
             connection:        default
             exchange_options:  {name: 'rule', type: direct}
             callback:          consumer.rule
             queue_options:     {name: 'rule'}
-            qos_options:       {prefetch_size: 0, prefetch_count: 10, global: false}
+            qos_options:       {prefetch_size: 0, prefetch_count: 1, global: false}
+        order:
+            connection:        default
+            exchange_options:  {name: 'order', type: direct}
+            callback:          consumer.order
+            queue_options:     {name: 'order'}
+            qos_options:       {prefetch_size: 0, prefetch_count: 1, global: false}
 
 doctrine_cache:
     aliases:

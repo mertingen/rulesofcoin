@@ -16,6 +16,35 @@
                 <div class="body">
                     <form id="form_advanced_validation" class="rule-form" method="post"
                           action="{{ path('binance-post-edit-rule', {id: rule.id}) }}">
+                        <label class="form-group">BTC: <span id="btc-price">{{ data['btcPrice'] }}</span>
+                            <a id="btc-percent-100">[%100]</a>
+                            <a id="btc-percent-75">[%75]</a>
+                            <a id="btc-percent-50">[%50]</a>
+                            <a id="btc-percent-25">[%25]</a>
+                        </label>
+                        <!--<label>Btc Price</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="number" class="form-control" id="btc-price"
+                                       placeholder="" name="btc-price"
+                                       value="" maxlength="10"
+                                       minlength="10"
+                                       required
+                                       disabled>
+                            </div>
+                            <div class="help-info">Limit rule to be purchased.</div>
+                        </div><!-->
+                        <label>Quantity</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="number" class="form-control" id="quantity"
+                                       placeholder="{{ rule.quantity }}" name="quantity"
+                                       value="{{ rule.quantity }}"
+                                       minlength="1"
+                                       required>
+                            </div>
+                            <div class="help-info">Limit rule to be purchased.</div>
+                        </div>
                         <label>Buy Limit</label>
                         <div class="form-group form-float">
                             <div class="form-line">
@@ -72,6 +101,10 @@
                 }
             };
 
+            $(".live-price").click(function () {
+                $("#buy-rule-limit").val($(this).text());
+            });
+
             $('#buy-rule-limit').on('input', function (e) {
                 var buyLimit = $(this).val();
                 var limit = parseInt($(this).attr('maxlength'));
@@ -83,7 +116,7 @@
                     var quantity = $('#quantity').val();
                     if (quantity !== '' && buyLimit !== '') {
                         var result = quantity * buyLimit;
-                        $('#btc-price').val(result.toFixed(8));
+                        $('#btc-price').text(result.toFixed(8));
                     }
                 }
             });
@@ -93,11 +126,11 @@
                 var buyLimit = $('#buy-rule-limit').val();
                 if (quantity !== '' && buyLimit !== '') {
                     var result = quantity * buyLimit;
-                    $('#btc-price').val(result.toFixed(8));
+                    $('#btc-price').text(result.toFixed(8));
                 }
             });
 
-            $('#btc-price').on('input', function (e) {
+            /**$('#btc-price').on('input', function (e) {
                 var btcPrice = $(this).val();
                 var limit = parseInt($(this).attr('maxlength'));
                 var chars = btcPrice.length;
@@ -111,22 +144,64 @@
                         $('#quantity').val(result.toFixed(8));
                     }
                 }
-            });
+            });**/
 
             $('#save').click(function (e) {
                 e.preventDefault();
-                if ($('#btc-price').val() < 0.00010000) {
+                var inputBtcPrice = $('#btc-price');
+                if (inputBtcPrice.text() < 0.00010000) {
                     iziToast.error({
                         title: 'ERROR',
-                        message: "Btc Price or Buy Limit not valid!"
+                        message: "Btc Price or Buy Limit not valid! (Btc Price should bigger than 0.0001)"
                     });
                     return false;
                 }
-                $('.rule-form').submit();
+                var btcPrice = "{{ data['btcPrice'] }}";
+                if (inputBtcPrice.text() > btcPrice) {
+                    var buyLimit = $('#buy-rule-limit').val();
+                    var result = btcPrice / buyLimit;
+                    $('#quantity').val(parseInt(result));
+                    inputBtcPrice.text(btcPrice);
+                } else {
+                    var ruleForm = $('.rule-form');
+                    var btcInput = $("<input>")
+                        .attr("type", "hidden")
+                        .attr("name", "btc-price").val("{{ rule.btcPrice }}");
+                    ruleForm.append(btcInput);
+                    ruleForm.submit();
+                }
             });
 
-            $(".live-price").click(function () {
-                $("#buy-rule-limit").val($(this).text());
+            $('#btc-percent-100').click(function () {
+                var userBtcPrice = "{{ data['btcPrice'] }}";
+                var btcPrice = $('#btc-price');
+                var buyLimit = $('#buy-rule-limit');
+                btcPrice.text(userBtcPrice);
+                $('#quantity').val(parseInt(btcPrice.text() / buyLimit.val()));
+            });
+
+            $('#btc-percent-75').click(function () {
+                var userBtcPrice = ("{{ data['btcPrice'] }}" * 75) / 100;
+                var btcPrice = $('#btc-price');
+                var buyLimit = $('#buy-rule-limit');
+                btcPrice.text(userBtcPrice);
+                $('#quantity').val(parseInt(btcPrice.text() / buyLimit.val()));
+            });
+
+            $('#btc-percent-50').click(function () {
+                var userBtcPrice = ("{{ data['btcPrice'] }}" * 50) / 100;
+                var btcPrice = $('#btc-price');
+                var buyLimit = $('#buy-rule-limit');
+                btcPrice.text(userBtcPrice);
+                $('#quantity').val(parseInt(btcPrice.text() / buyLimit.val()));
+            });
+
+            $('#btc-percent-25').click(function () {
+                var userBtcPrice = ("{{ data['btcPrice'] }}" * 25) / 100;
+                var btcPrice = $('#btc-price');
+                var buyLimit = $('#buy-rule-limit');
+                btcPrice.text(userBtcPrice);
+                $('#quantity').val(parseInt(btcPrice.text() / buyLimit.val()));
             });
 
             {% for label, messages in app.flashes(['success']) %}

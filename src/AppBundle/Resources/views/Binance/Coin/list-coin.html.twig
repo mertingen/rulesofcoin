@@ -8,30 +8,39 @@
                         Coin Table
                     </h2>
                 </div>
-                <div class="body table-responsive">
-                    <table class="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Price</th>
-                            <th>Actions</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {% for name,price in coins %}
-                            <tr class="list-item-block">
-                                <td>{{ name }}</td>
-                                <td id="{{ name | lower }}">{{ price }}</td>
-                                <td>
-                                    <a data-toggle="confirmation"
-                                       href="{{ path('binance-add-rule', {symbol: name}) }}"
-                                       class="btn fancybox default edit btn-xs green"
-                                       title="Edit"><i class="material-icons">edit</i></a>
-                                </td>
+                <div class="body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Add Rule</th>
                             </tr>
-                        {% endfor %}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tfoot>
+                            <tr>
+                                <th>Name</th>
+                                <th>Price</th>
+                                <th>Add Rule</th>
+                            </tr>
+                            </tfoot>
+                            <tbody>
+                            {% for name,price in coins %}
+                                <tr class="list-item-block">
+                                    <td>{{ name }}</td>
+                                    <td id="{{ name | lower }}">{{ price }}</td>
+                                    <td>
+                                        <a data-toggle="confirmation"
+                                           href="{{ path('binance-add-rule', {symbol: name}) }}"
+                                           class="btn fancybox default edit btn-xs green"
+                                           title="Edit"><i class="material-icons">add_alert</i></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>
@@ -41,8 +50,9 @@
 
 
 {% block javascripts %}
-    <script src="{{ asset("assets/plugins/sweetalert/sweetalert.min.js") }}"></script>
-    <script src="{{ asset("assets/js/demo.js") }}"></script>
+    <script src="{{ asset("assets/plugins/jquery-datatable/jquery.dataTables.js") }}"></script>
+    <script src="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js") }}"></script>
+    <script src="{{ asset("assets/js/pages/tables/custom-jquery-datatable.js") }}"></script>
     <script type="text/javascript">
         $(document).ready(function () {
             var coins = {{ coins | json_encode | raw }};

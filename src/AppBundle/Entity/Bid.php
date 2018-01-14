@@ -36,6 +36,13 @@ class Bid
     private $clientOrderId;
 
     /**
+     * @var int
+     *
+     * @ORM\Column(name="executed_quantity", type="string", length=255)
+     */
+    private $executedQuantity;
+
+    /**
      * @var \DateTime
      *
      * @ORM\Column(name="created_at", type="datetime")
@@ -184,5 +191,29 @@ class Bid
     public function getOrderId()
     {
         return $this->orderId;
+    }
+
+    /**
+     * Set executedQuantity
+     *
+     * @param string $executedQuantity
+     *
+     * @return Bid
+     */
+    public function setExecutedQuantity($executedQuantity)
+    {
+        $this->executedQuantity = $executedQuantity;
+
+        return $this;
+    }
+
+    /**
+     * Get executedQuantity
+     *
+     * @return string
+     */
+    public function getExecutedQuantity()
+    {
+        return $this->executedQuantity;
     }
 }

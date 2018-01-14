@@ -14,6 +14,11 @@ services:
             - '@doctrine.orm.entity_manager'
             - '@AppBundle\Service\BinanceService'
 
+    consumer.order:
+        class: AppBundle\Consumer\OrderConsumer
+        arguments:
+            - '@doctrine.orm.entity_manager'
+
     redis_service:
         class: AppBundle\Service\RedisService
         arguments:

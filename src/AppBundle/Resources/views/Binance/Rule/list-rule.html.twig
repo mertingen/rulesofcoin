@@ -18,6 +18,9 @@
                             <tr>
                                 <th>#</th>
                                 <th>Symbol</th>
+                                <th>Btc Price</th>
+                                <th>Quantity</th>
+                                <th>Stop</th>
                                 <th>Limit</th>
                                 <th>Current Price</th>
                                 <th>Is Done</th>
@@ -28,6 +31,9 @@
                             <tr>
                                 <th>#</th>
                                 <th>Symbol</th>
+                                <th>Btc Price</th>
+                                <th>Quantity</th>
+                                <th>Stop</th>
                                 <th>Limit</th>
                                 <th>Current Price</th>
                                 <th>Is Done</th>
@@ -40,6 +46,9 @@
                                 <tr class="list-item-block">
                                     <th scope="row">{{ counter }}</th>
                                     <td>{{ rule.symbol }}</td>
+                                    <th>{{ rule.btcPrice }}</th>
+                                    <th>{{ rule.quantity }}</th>
+                                    <th>{{ rule.stop }}</th>
                                     <td>{{ rule.buyLimit }}</td>
                                     <td id="{{ rule.symbol | lower }}"></td>
                                     <td>
@@ -108,11 +117,6 @@
                     };
                 });
 
-
-
-
-
-
                 $('.delete').click(function (event) {
                     event.preventDefault();
                     var targetElem = $(this);
@@ -136,7 +140,25 @@
                             }
                         });
                     });
-                })
+                });
+
+                {% for label, messages in app.flashes(['success']) %}
+                {% for message in messages %}
+                iziToast.success({
+                    title: 'SUCCESS',
+                    message: "{{ message }}"
+                });
+                {% endfor %}
+                {% endfor %}
+
+                {% for label, messages in app.flashes(['error']) %}
+                {% for message in messages %}
+                iziToast.error({
+                    title: 'ERROR',
+                    message: "{{ message }}"
+                });
+                {% endfor %}
+                {% endfor %}
             });
         </script>
 
