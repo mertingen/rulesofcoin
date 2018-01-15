@@ -24,3 +24,9 @@ services:
         arguments:
             - '@doctrine_cache.providers.redis_cache'
         public: true
+
+    user_binance_api_keys.listener:
+      class: AppBundle\EventListener\UserBinanceApiKeysListener
+      tags:
+        - { name: kernel.event_listener, event: kernel.request, method: onKernelRequest }
+      arguments: ['@security.token_storage', '@router']

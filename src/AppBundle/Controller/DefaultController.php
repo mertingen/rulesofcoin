@@ -17,9 +17,6 @@ class DefaultController extends Controller
      */
     public function indexAction(Request $request)
     {
-        if (!$this->getUser()->getBinanceApiKey() || !$this->getUser()->getBinanceSecretKey()) {
-            return $this->redirectToRoute('key-add');
-        }
         return $this->redirectToRoute('binance-coin-list');
     }
 }
