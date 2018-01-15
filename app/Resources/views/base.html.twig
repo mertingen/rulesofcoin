@@ -34,7 +34,8 @@
 
     <link href="{{ asset("assets/css/iziToast.min.css") }}" rel="stylesheet">
 
-    <link href="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css") }}" rel="stylesheet">
+    <link href="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/css/dataTables.bootstrap.css") }}"
+          rel="stylesheet">
     {% block stylesheets %}
     {% endblock %}
 </head>
@@ -70,6 +71,8 @@
             <a class="navbar-brand" href="{{ path('homepage') }}">RULECHAIN</a>
         </div>
         <div class="collapse navbar-collapse" id="navbar-collapse">
+            <label class="navbar-right col-white font-15" id="user-btc"
+                   style="margin-top: 25px; margin-right: 25px"></label>
         </div>
     </div>
 </nav>
@@ -208,6 +211,31 @@
 
 <!-- Demo Js -->
 <script src="{{ asset("assets/js/demo.js") }}"></script>
+<script>
+    $(document).ready(function () {
+        var userBtcUrl = "{{ path('binance-api-user-btc-price') }}";
+        $.ajax
+        ({
+            type: "GET",
+            url: userBtcUrl,
+            success: function (userBtcData) {
+                $('#user-btc').text("BTC: " + userBtcData.userBtc);
+                $.ajax({
+                    type: "GET",
+                    url: "https://www.bitstamp.net/api/ticker/",
+                    success: function (btcPriceData) {
+                        $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $" + (btcPriceData.open * userBtcData.userBtc));
+                    },
+                    error: function (status) {
+                        console.log(status);
+                    }
+                });
+            }
+        });
+
+
+    });
+</script>
 {% block javascripts %}
 {% endblock %}
 </body>
