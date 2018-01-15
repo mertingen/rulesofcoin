@@ -220,14 +220,14 @@
             url: userBtcUrl,
             success: function (userBtcData) {
                 $('#user-btc').text("BTC: " + userBtcData.userBtc);
+                var btcToUsdUrl = "{{ path('binance-api-user-btc-to-usd') }}";
                 $.ajax({
                     type: "GET",
-                    url: "https://www.bitstamp.net/api/ticker/",
-                    success: function (btcPriceData) {
-                        $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $" + (btcPriceData.open * userBtcData.userBtc));
+                    url: btcToUsdUrl,
+                    success: function (btcUsdData) {
+                        $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $" + (btcUsdData.usd * userBtcData.userBtc).toFixed(2));
                     },
                     error: function (status) {
-                        console.log(status);
                     }
                 });
             }

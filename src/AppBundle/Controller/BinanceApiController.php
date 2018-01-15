@@ -32,6 +32,15 @@ class BinanceApiController extends Controller
     {
         $userBtc = $binanceService->getUserBtcPrice($this->getUser());
         return new JsonResponse(array('userBtc' => $userBtc));
+    }
+
+    /**
+     * @Route("user-btc-to-usd", name="binance-api-user-btc-to-usd")
+     */
+    public function getUserBtcToUsdAction()
+    {
+        $result = json_decode(file_get_contents("https://www.bitstamp.net/api/ticker/"));
+        return new JsonResponse(array('usd' => $result->open));
 
     }
 
