@@ -32,7 +32,7 @@ class BinanceService
      */
     public function __construct($binanceApi, $binanceApiKey = NULL, $binanceSecretKey = NULL, TokenStorage $tokenStorage, EntityManagerInterface $entityManager, RedisService $redisService)
     {
-        $user = $tokenStorage->getToken()->getUser();
+        //$user = $tokenStorage->getToken()->getUser();
         //$this->binanceApi = new $binanceApi($user->getBinanceApiKey(), $user->getBinanceSecretKey());
         $this->binanceApi = new $binanceApi($binanceApiKey, $binanceSecretKey);
         $this->entityManager = $entityManager;
