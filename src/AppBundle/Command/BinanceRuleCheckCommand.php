@@ -40,7 +40,7 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                                 echo PHP_EOL . '[' . $symbol . ']' . ' için  LIMIT emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                             }
                         } else {
-                            echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            //echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
                         }
                     }
                 }
