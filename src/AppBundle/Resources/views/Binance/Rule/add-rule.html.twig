@@ -176,7 +176,7 @@
                         } else if ($('#rule-stop').val() < $('.live-price').text()) {
                             var stopTypeInput = $("<input>")
                                 .attr("type", "hidden")
-                                .attr("name", "stop-type").val("greater");
+                                .attr("name", "stop-type").val("smaller");
                         }
                     }
                     ruleForm.append(btcInput);
