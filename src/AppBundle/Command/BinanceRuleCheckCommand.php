@@ -60,7 +60,7 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
 
     public function getMqProducer()
     {
-        return $this->getContainer()->get('old_sound_rabbit_mq.rule_consumer');
+        return $this->getContainer()->get('old_sound_rabbit_mq.rule_producer');
     }
 
     /**
@@ -100,7 +100,7 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
             $result = $userBinanceApi->buy($symbol, $quantity, $trades['price']);
         }
         if (is_array($result)) {
-            if (array_key_exists('code', $result) && intval($result) < 0) {
+            if (array_key_exists('code', $result) && is_numeric($result['code'])) {
                 echo '[ERROR] -> ' . $result['msg'] . PHP_EOL;
             } else {
                 $order = array(
