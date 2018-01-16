@@ -110,6 +110,7 @@ class BinanceController extends Controller
         $stop = $request->request->get('stop', null);
         $btcPrice = $request->request->get('btc-price', null);
         $quantity = $request->request->get('quantity', null);
+        $stopType = $request->request->get('stop-type', null);
 
         if (empty($buyLimit)) {
             $this->flashBag->add('error', 'Buy limit is not found!');
@@ -133,19 +134,19 @@ class BinanceController extends Controller
             $stop = $binanceService->getBtcNumberFormat(floatval($stop));
         }
 
+        if ($btcPrice < 0.00010000) {
+            $this->flashBag->add('error', 'Btc Price should bigger 0.0001');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
         $isValidBtcPrice = $binanceService->getBtcNumberFormat(floatval($quantity * $buyLimit));
         if ($btcPrice < $isValidBtcPrice) {
             $this->flashBag->add('error', 'Btc price not valid!');
             return $this->redirectToRoute('binance-coin-list');
         }
 
-        if ($btcPrice < 0.00010000) {
-            $this->flashBag->add('error', 'Btc Price should bigger 0.0001');
-            return $this->redirectToRoute('binance-coin-list');
-        }
-
-        if (!empty($stop) && $stop > 0 && $stop < $buyLimit) {
-            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
+        if (!empty($stop) && $stop > 0 && $stop > $buyLimit && empty($stopType)) {
+            $this->flashBag->add('error', 'Stop is not valid!');
             return $this->redirectToRoute('binance-coin-list');
         }
 
@@ -165,6 +166,7 @@ class BinanceController extends Controller
         $rule->setQuantity($quantity);
         $rule->setBtcPrice($btcPrice);
         $rule->setIsDone(false);
+        $rule->setStopType($stopType);
 
         $ruleId = $binanceService->upsertRule($rule)->getId();
 
@@ -240,11 +242,13 @@ class BinanceController extends Controller
             return $this->redirectToRoute('binance-coin-list');
         }
 
+
         $buyLimit = $request->request->get('buy-limit', null);
         $btcPrice = $request->request->get('btc-price', null);
         $quantity = $request->request->get('quantity', null);
-
+        $stopType = $request->request->get('stop-type', null);
         $stop = $request->request->get('stop', null);
+
         if (!$buyLimit) {
             $this->flashBag->add('error', 'Limit is not found!');
             return $this->redirectToRoute('binance-coin-list');
@@ -269,18 +273,19 @@ class BinanceController extends Controller
         }
 
         $isValidBtcPrice = $binanceService->getBtcNumberFormat(floatval($quantity * $buyLimit));
-        if ($btcPrice < $isValidBtcPrice) {
-            $this->flashBag->add('error', 'Btc price not valid!');
-            return $this->redirectToRoute('binance-coin-list');
-        }
 
         if ($btcPrice < 0.00010000) {
             $this->flashBag->add('error', 'Btc Price should bigger 0.0001');
             return $this->redirectToRoute('binance-coin-list');
         }
 
-        if (!empty($stop) && $stop > 0 && $stop < $buyLimit) {
-            $this->flashBag->add('error', 'Stop must be bigger than buy limit!');
+        if ($btcPrice < $isValidBtcPrice) {
+            $this->flashBag->add('error', 'Btc price not valid!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
+
+        if (!empty($stop) && $stop > 0 && $stop > $buyLimit && empty($stopType)) {
+            $this->flashBag->add('error', 'Stop is not valid!');
             return $this->redirectToRoute('binance-coin-list');
         }
         if ((strlen($buyLimit) !== 10 && $buyLimit < 0) || (!empty($stop) && (strlen($stop) !== 10) || $stop < 0)) {
@@ -297,6 +302,7 @@ class BinanceController extends Controller
         $rule->setStop($stop);
         $rule->setBuyLimit($buyLimit);
         $rule->setQuantity($quantity);
+        $rule->setStopType($stopType);
         $binanceService->upsertRule($rule)->getId();
 
         $binanceService->setRulesToRedis($userService->get($this->getUser()->getId()));
@@ -316,28 +322,29 @@ class BinanceController extends Controller
     function deleteRuleAction($id = NULL, BinanceService $binanceService)
     {
         if (!$id) {
-            dump('Rule Id not found!');
-            die;
+            return new Response(json_encode(array('status' => false, 'message' => 'Rule id not found!')), 404);
         }
 
         $rule = $binanceService->getRule(array('id' => $id, 'user' => $this->getUser()));
 
         $rules = $this->get('redis_service')->get('rules');
-        foreach ($rules[$rule->getSymbol()] as $key => $symbolRule) {
-            if ($symbolRule['ruleId'] == $id) {
-                unset($rules[$rule->getSymbol()][$key]);
-                if (count($rules[$rule->getSymbol()]) < 1) {
-                    unset($rules[$rule->getSymbol()]);
+        if ($rules) {
+            foreach ($rules[$rule->getSymbol()] as $key => $symbolRule) {
+                if ($symbolRule['ruleId'] == $id) {
+                    unset($rules[$rule->getSymbol()][$key]);
+                    if (count($rules[$rule->getSymbol()]) < 1) {
+                        unset($rules[$rule->getSymbol()]);
+                    }
+                    break;
                 }
-                break;
+            }
+            $this->get('redis_service')->insert('rules', $rules);
+            $isDeleted = $binanceService->removeRule($rule);
+            if ($isDeleted) {
+                return new Response(json_encode(array('status' => true, 'message' => 'Successfully deleted.')), 200);
             }
         }
-        $this->get('redis_service')->insert('rules', $rules);
-        $isDeleted = $binanceService->removeRule($rule);
-        if (!$isDeleted) {
-            return new Response(json_encode(array('status' => false, 'message' => 'Unsuccessfully deleted . ')), 404);
-        }
-        return new Response(json_encode(array('status' => true, 'message' => 'Successfully deleted . ')), 200);
+        return new Response(json_encode(array('status' => false, 'message' => 'Unsuccessfully deleted.')), 404);
     }
 
     /**

@@ -168,7 +168,19 @@
                     var btcInput = $("<input>")
                         .attr("type", "hidden")
                         .attr("name", "btc-price").val(inputBtcPrice.text());
+                    if ($('#rule-stop').val() !== '') {
+                        if ($('#rule-stop').val() > $('.live-price').text()) {
+                            var stopTypeInput = $("<input>")
+                                .attr("type", "hidden")
+                                .attr("name", "stop-type").val("greater");
+                        } else if ($('#rule-stop').val() < $('.live-price').text()) {
+                            var stopTypeInput = $("<input>")
+                                .attr("type", "hidden")
+                                .attr("name", "stop-type").val("greater");
+                        }
+                    }
                     ruleForm.append(btcInput);
+                    ruleForm.append(stopTypeInput);
                     ruleForm.submit();
                 }
             });

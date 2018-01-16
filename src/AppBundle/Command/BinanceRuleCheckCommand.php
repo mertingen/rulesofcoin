@@ -28,19 +28,26 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                 $rules = $this->getRedisService()->get('rules');
                 if (isset($rules[$symbol])) {
                     foreach ($rules[$symbol] as $symbolKey => &$symbolRule) {
-                        if ($trades['price'] <= $symbolRule['buyLimit']) {
-                            unset($rules[$symbolKey]);
-                            $this->getRedisService()->insert('rules', $rules);
-                            if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop']) && $symbolRule['stop'] > 0) {
-                                $isStop = true;
-                                $this->buy($symbolRule, $symbol, $trades, $isStop);
-                                echo PHP_EOL . '[' . $symbol . ']' . ' için  STOP-LIMIT emir girildi! RULE: ' . $symbolRule['stop'] . ' PRICE:' . $trades['price'] . PHP_EOL;
-                            } else {
-                                $this->buy($symbolRule, $symbol, $trades);
-                                echo PHP_EOL . '[' . $symbol . ']' . ' için  LIMIT emir girildi! RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                        $quantity = intval($symbolRule['quantity']);
+                        if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop']) && $symbolRule['stop'] > 0 && isset($symbolRule['stopType'])) {
+                            if ($symbolRule['stopType'] == 'smaller' && $trades['price'] <= $symbolRule['stop']) {
+                                unset($rules[$symbolKey]);
+                                $this->getRedisService()->insert('rules', $rules);
+                                //$this->buy($symbolRule, $symbol, $trades, $quantity);
+                                echo '[' . $symbol . ']' . ' - ' . '[STOP-LIMIT-SMALLER]' . ' - ' . '[QUANTITY:' . $quantity . ']' . ' - ' . '[STOP:' . $symbolRule['stop'] . ']' . '[LIMIT:' . $symbolRule['buyLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . PHP_EOL;
+                            } elseif ($symbolRule['stopType'] == 'greater' && $trades['price'] >= $symbolRule['stop']) {
+                                unset($rules[$symbolKey]);
+                                $this->getRedisService()->insert('rules', $rules);
+                                //$this->buy($symbolRule, $symbol, $trades, $quantity);
+                                echo '[' . $symbol . ']' . ' - ' . '[STOP-LIMIT-GREATER]' . ' - ' . '[QUANTITY:' . $quantity . ']' . ' - ' . '[STOP:' . $symbolRule['stop'] . ']' . '[LIMIT:' . $symbolRule['buyLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . PHP_EOL;
                             }
                         } else {
-                            //echo '[' . $symbol . ']' . ' RULE İŞLENMEDİ' . ' RULE: ' . $symbolRule['buyLimit'] . ' PRICE:' . $trades['price'] . PHP_EOL;
+                            if ($trades['price'] <= $symbolRule['buyLimit']) {
+                                unset($rules[$symbolKey]);
+                                $this->getRedisService()->insert('rules', $rules);
+                                //$this->buy($symbolRule, $symbol, $trades, $quantity);
+                                echo '[' . $symbol . ']' . ' - ' . '[LIMIT]' . ' - ' . '[' . $quantity . ']' . ' - ' . '[LIMIT:' . $symbolRule['buyLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . PHP_EOL;
+                            }
                         }
                     }
                 }
@@ -84,21 +91,18 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
      * @param array $rule
      * @param string $symbol
      * @param array $trades
+     * @param int $quantity
      * @param bool $isStop
      */
-    public function buy($rule = array(), $symbol = '', $trades = array(), $isStop = false)
+    public function buy($rule = array(), $symbol = '', $trades = array(), $quantity = 0, $isStop = false)
     {
         $userBinanceApi = new API(
             $rule['binance_api_key'],
             $rule['binance_secret_key']
         );
         //$btcAvailable = $userBinanceApi->balances()['BTC']['available'];
-        $quantity = intval($rule['btcPrice'] / $trades['price']);
-        if ($isStop) {
-            $result = $userBinanceApi->buy($symbol, $quantity, $rule['stop']);
-        } else {
-            $result = $userBinanceApi->buy($symbol, $quantity, $trades['price']);
-        }
+        //$quantity = intval($rule['btcPrice'] / $trades['price']);
+        $result = $userBinanceApi->buy($symbol, $quantity, $rule['buyLimit']);
         if (is_array($result)) {
             if (array_key_exists('code', $result) && is_numeric($result['code'])) {
                 echo '[ERROR] -> ' . $result['msg'] . PHP_EOL;

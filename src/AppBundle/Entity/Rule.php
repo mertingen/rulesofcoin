@@ -39,6 +39,13 @@ class Rule
     /**
      * @var string
      *
+     * @ORM\Column(name="stop_type", type="string", length=255, nullable=true)
+     */
+    private $stopType;
+
+    /**
+     * @var string
+     *
      * @ORM\Column(name="buy_limit", type="string", length=255)
      */
     private $buyLimit;
@@ -307,5 +314,29 @@ class Rule
     public function getBid()
     {
         return $this->bid;
+    }
+
+    /**
+     * Set stopType
+     *
+     * @param string $stopType
+     *
+     * @return Rule
+     */
+    public function setStopType($stopType)
+    {
+        $this->stopType = $stopType;
+
+        return $this;
+    }
+
+    /**
+     * Get stopType
+     *
+     * @return string
+     */
+    public function getStopType()
+    {
+        return $this->stopType;
     }
 }

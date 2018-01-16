@@ -166,7 +166,21 @@
                     var ruleForm = $('.rule-form');
                     var btcInput = $("<input>")
                         .attr("type", "hidden")
-                        .attr("name", "btc-price").val("{{ rule.btcPrice }}");
+                        .attr("name", "btc-price").val("{{ data['btcPrice'] }}");
+                    if ($('#rule-stop').val() !== '') {
+                        if ($('#rule-stop').val() > $('.live-price').text()) {
+                            var stopTypeInput = $("<input>")
+                                .attr("type", "hidden")
+                                .attr("name", "stop-type").val("greater");
+                        } else if ($('#rule-stop').val() < $('.live-price').text()) {
+                            var stopTypeInput = $("<input>")
+                                .attr("type", "hidden")
+                                .attr("name", "stop-type").val("smaller");
+                        }
+                    }
+                    ruleForm.append(btcInput);
+                    ruleForm.append(stopTypeInput);
+                    ruleForm.submit();
                     ruleForm.append(btcInput);
                     ruleForm.submit();
                 }
