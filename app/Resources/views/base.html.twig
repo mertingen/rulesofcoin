@@ -221,15 +221,19 @@
             success: function (userBtcData) {
                 $('#user-btc').text("BTC: " + userBtcData.userBtc);
                 var btcToUsdUrl = "{{ path('binance-api-user-btc-to-usd') }}";
-                $.ajax({
-                    type: "GET",
-                    url: btcToUsdUrl,
-                    success: function (btcUsdData) {
-                        $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $" + (btcUsdData.usd * userBtcData.userBtc).toFixed(2));
-                    },
-                    error: function (status) {
-                    }
-                });
+                if (userBtcData.userBtc > 0) {
+                    $.ajax({
+                        type: "GET",
+                        url: btcToUsdUrl,
+                        success: function (btcUsdData) {
+                            $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $" + (btcUsdData.usd * userBtcData.userBtc).toFixed(2));
+                        },
+                        error: function (status) {
+                        }
+                    });
+                } else{
+                    $('#user-btc').text("BTC: " + userBtcData.userBtc + " / $0.00");
+                }
             }
         });
 
