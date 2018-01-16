@@ -18,7 +18,7 @@ use Symfony\Component\Routing\Annotation\Route;
 /**
  * Class BinanceApiController
  * @package AppBundle\Controller
- * @Route("/binance-api/")
+ * @Route("/binance-api")
  * @Security("has_role('ROLE_USER')")
  */
 class BinanceApiController extends Controller
@@ -30,10 +30,7 @@ class BinanceApiController extends Controller
      */
     public function getUserBtcPriceAction(BinanceService $binanceService)
     {
-        $userBtc = 0;
-        if ($this->getUser()->getBinanceApiKey() && $this->getUser()->getBinanceSecretKey()) {
-            $userBtc = $binanceService->getUserBtcPrice($this->getUser());
-        }
+        $userBtc = $binanceService->getUserBtcPrice($this->getUser());
         return new JsonResponse(array('userBtc' => $userBtc));
     }
 
