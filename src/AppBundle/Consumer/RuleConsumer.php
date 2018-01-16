@@ -36,7 +36,7 @@ class RuleConsumer implements ConsumerInterface
     {
         try {
             $bid = unserialize($data->body);
-            if (is_array($bid) && !empty($bid)) {
+            if (is_array($bid) && !empty($bid) && !empty($bid['orderId'])) {
                 $newBid = new Bid();
                 $newBid->setOrderId($bid['orderId']);
                 $newBid->setClientOrderId($bid['clientOrderId']);
