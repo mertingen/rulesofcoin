@@ -115,7 +115,7 @@ class BinanceService
      */
     public function setRulesToRedis(User $user)
     {
-        $rules = $this->getRules();
+        $rules = $this->getRules(array('isDone' => false));
         $data = array();
         /**
          * @var $rule Rule
