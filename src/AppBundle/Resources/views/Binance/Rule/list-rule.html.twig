@@ -90,56 +90,61 @@
     {% block javascripts %}
         <script src="{{ asset("assets/plugins/jquery-datatable/jquery.dataTables.js") }}"></script>
         <script src="{{ asset("assets/plugins/jquery-datatable/skin/bootstrap/js/dataTables.bootstrap.js") }}"></script>
-        <script src="{{ asset("assets/js/pages/tables/jquery-datatable.js") }}"></script>
         <script type="text/javascript">
             $(document).ready(function () {
 
-                var coins = {{ coins | json_encode | raw }};
-                var prices = [];
-                $.each(coins, function (key, value) {
-                    $('#' + key.toLowerCase()).text(value);
-                    var url = "wss://stream.binance.com:9443/ws/" + key.toLowerCase() + "@aggTrade";
-                    w = new WebSocket(url);
-                    w.onopen = function () {
-                        //console.log('OPENED!');
-                    };
-                    w.onmessage = function (e) {
-                        var data = JSON.parse(e.data.toString());
-                        if (!prices[key]) {
-                            prices[key] = data.p;
-                        } else {
-                            if (prices[key] > data.p) {
-                                $('#' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
-                            } else {
-                                $('#' + key.toLowerCase()).text(data.p).css('color', '#5AE25A');
-                            }
-                        }
-                    };
-                });
-
-                $('.delete').click(function (event) {
-                    event.preventDefault();
-                    var targetElem = $(this);
-                    swal({
-                        title: "Are you sure?",
-                        text: "You will not be able to recover this data!",
-                        type: "warning",
-                        showCancelButton: true,
-                        confirmButtonColor: "#DD6B55",
-                        confirmButtonText: "Yes, delete it!",
-                        closeOnConfirm: false
-                    }, function () {
-                        var targetHref = targetElem.attr('href');
-                        $.get(targetHref, function (data) {
-                            var objData = JSON.parse(data);
-                            if (objData.status) {
-                                targetElem.closest('.list-item-block').remove();
-                                swal("Deleted!", "Your data has been deleted.", "success");
-                            } else {
-                                swal("Error!", "error", "warning");
-                            }
+                $('.js-basic-example').DataTable({
+                    responsive: true,
+                    pageLength: 150,
+                    "drawCallback": function (settings) {
+                        var coins = {{ coins | json_encode | raw }};
+                        var prices = [];
+                        $.each(coins, function (key, value) {
+                            $('#' + key.toLowerCase()).text(value);
+                            var url = "wss://stream.binance.com:9443/ws/" + key.toLowerCase() + "@aggTrade";
+                            w = new WebSocket(url);
+                            w.onopen = function () {
+                                //console.log('OPENED!');
+                            };
+                            w.onmessage = function (e) {
+                                var data = JSON.parse(e.data.toString());
+                                if (!prices[key]) {
+                                    prices[key] = data.p;
+                                } else {
+                                    if (prices[key] > data.p) {
+                                        $('#' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
+                                    } else {
+                                        $('#' + key.toLowerCase()).text(data.p).css('color', '#5AE25A');
+                                    }
+                                }
+                            };
                         });
-                    });
+
+                        $('.delete').click(function (event) {
+                            event.preventDefault();
+                            var targetElem = $(this);
+                            swal({
+                                title: "Are you sure?",
+                                text: "You will not be able to recover this data!",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: "#DD6B55",
+                                confirmButtonText: "Yes, delete it!",
+                                closeOnConfirm: false
+                            }, function () {
+                                var targetHref = targetElem.attr('href');
+                                $.get(targetHref, function (data) {
+                                    var objData = JSON.parse(data);
+                                    if (objData.status) {
+                                        targetElem.closest('.list-item-block').remove();
+                                        swal("Deleted!", "Your data has been deleted.", "success");
+                                    } else {
+                                        swal("Error!", "error", "warning");
+                                    }
+                                });
+                            });
+                        });
+                    }
                 });
 
                 {% for label, messages in app.flashes(['success']) %}
