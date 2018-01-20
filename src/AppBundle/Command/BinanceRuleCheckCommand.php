@@ -53,9 +53,9 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                     }
                 }
             });
-        } else {
-            $output->write('Rules not found!!!');
-        }
+        } //else {
+        //$output->write('Rules not found!!!');
+        //}
     }
 
     /**
