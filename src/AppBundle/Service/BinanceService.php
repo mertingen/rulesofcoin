@@ -17,6 +17,9 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorage;
 
 class BinanceService
 {
+    /**
+     * @var API $binanceApi
+     */
     private $binanceApi;
     private $entityManager;
     private $redisService;
@@ -121,7 +124,7 @@ class BinanceService
          * @var $rule Rule
          */
         foreach ($rules as $rule) {
-            $data[$rule->getSymbol()][] = array(
+            $data[$rule->getSymbol()][$rule->getId()] = array(
                 'ruleId' => $rule->getId(),
                 'buyLimit' => $rule->getBuyLimit(),
                 'stop' => $rule->getStop(),
@@ -134,33 +137,6 @@ class BinanceService
         }
         $this->redisService->insert('rules', $data);
 
-    }
-
-    public function getUserBtcPrice(User $user)
-    {
-        $userBinanceApi = new API(
-            $user->getBinanceApiKey(),
-            $user->getBinanceSecretKey()
-        );
-        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
-        return $btcAvailable;
-    }
-
-    /**
-     * @param User $user
-     * @param int $price
-     * @param string $symbol
-     * @return array
-     */
-    public function getSymbolQuantityByBtc(User $user, $price = 0, $symbol = '')
-    {
-        $userBinanceApi = new API(
-            $user->getBinanceApiKey(),
-            $user->getBinanceSecretKey()
-        );
-        $btcAvailable = $userBinanceApi->balances()['BTC']['available'];
-        $quantity = intval($btcAvailable / $price);
-        return $quantity;
     }
 
     /**

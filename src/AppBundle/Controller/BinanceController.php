@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Rule;
 use AppBundle\Entity\User;
 use AppBundle\Service\BinanceService;
+use AppBundle\Service\UserBinanceService;
 use AppBundle\Service\UserService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -45,10 +46,11 @@ class BinanceController extends Controller
      * @Route("/rule/{symbol}", methods={"GET"}, name="binance-add-rule")
      * @param null $symbol
      * @param BinanceService $binanceService
+     * @param UserBinanceService $userBinanceService
      * @param FlashBagInterface $flashBag
      * @return \Symfony\Component\HttpFoundation\RedirectResponse|Response
      */
-    public function addRuleAction($symbol = NULL, BinanceService $binanceService, FlashBagInterface $flashBag)
+    public function addRuleAction($symbol = NULL, BinanceService $binanceService, UserBinanceService $userBinanceService, FlashBagInterface $flashBag)
     {
         $symbols = $this->get('redis_service')->get('symbols');
         if (!in_array($symbol, $symbols)) {
@@ -66,8 +68,11 @@ class BinanceController extends Controller
         }
 
         $data = $binanceService->getCoinsWithPrices($symbol);
-        $data['quantity'] = $binanceService->getSymbolQuantityByBtc($this->getUser(), $data['price'], $data['symbol']);
-        $data['btcPrice'] = $binanceService->getUserBtcPrice($this->getUser());
+        $binanceApiKey = $this->getUser()->getBinanceApiKey();
+        $binanceSecretKey = $this->getUser()->getBinanceSecretKey();
+        $userBinanceService->connect($binanceApiKey, $binanceSecretKey);
+        $data['quantity'] = $userBinanceService->getSymbolQuantityByBtc($data['price'], $data['symbol']);
+        $data['btcPrice'] = $userBinanceService->getUserBtcPrice();
 
 
         return $this->render('@App/Binance/Rule/add-rule.html.twig',
@@ -181,10 +186,11 @@ class BinanceController extends Controller
      * @Route("/editRule/{id}", methods={"GET"}, name="binance-edit-rule")
      * @param null $id
      * @param BinanceService $binanceService
+     * @param UserBinanceService $userBinanceService
      * @return Response
      */
     public
-    function editRuleAction($id = NULL, BinanceService $binanceService)
+    function editRuleAction($id = NULL, BinanceService $binanceService, UserBinanceService $userBinanceService)
     {
         if (!$id) {
             $this->flashBag->add('error', 'Rule not found!');
@@ -204,7 +210,10 @@ class BinanceController extends Controller
         }
 
         $data = $binanceService->getCoinsWithPrices($rule->getSymbol());
-        $data['btcPrice'] = $binanceService->getUserBtcPrice($this->getUser());
+        $binanceApiKey = $this->getUser()->getBinanceApiKey();
+        $binanceSecretKey = $this->getUser()->getBinanceSecretKey();
+        $userBinanceService->connect($binanceApiKey, $binanceSecretKey);
+        $data['btcPrice'] = $userBinanceService->getUserBtcPrice();
 
         return $this->render('@App/Binance/Rule/edit-rule.html.twig',
             array(

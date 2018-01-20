@@ -10,6 +10,7 @@ namespace AppBundle\Controller;
 
 
 use AppBundle\Service\BinanceService;
+use AppBundle\Service\UserBinanceService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -23,14 +24,19 @@ use Symfony\Component\Routing\Annotation\Route;
  */
 class BinanceApiController extends Controller
 {
+
     /**
-     * @param BinanceService $binanceService
-     * @Route("/user-btc-price", name="binance-api-user-btc-price")
+     * @param UserBinanceService $userBinanceService
      * @return JsonResponse
+     * @Route("/user-btc-price", name="binance-api-user-btc-price")
      */
-    public function getUserBtcPriceAction(BinanceService $binanceService)
+    public function getUserBtcPriceAction(UserBinanceService $userBinanceService)
     {
-        $userBtc = $binanceService->getUserBtcPrice($this->getUser());
+        $binanceApiKey = $this->getUser()->getBinanceApiKey();
+        $binanceSecretKey = $this->getUser()->getBinanceSecretKey();
+        $userBinanceService->connect($binanceApiKey, $binanceSecretKey);
+        $userBtc = $userBinanceService->getUserBtcPrice();
+
         return new JsonResponse(array('userBtc' => $userBtc));
     }
 

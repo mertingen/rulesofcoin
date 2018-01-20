@@ -8,16 +8,23 @@ services:
             $entityManager: '@Doctrine\ORM\EntityManagerInterface'
             $redisService: '@redis_service'
 
+    AppBundle\Service\UserBinanceService:
+        arguments:
+            $binanceApi: 'Binance\API'
+
     consumer.rule:
         class: AppBundle\Consumer\RuleConsumer
         arguments:
             - '@doctrine.orm.entity_manager'
             - '@AppBundle\Service\BinanceService'
+            - '@AppBundle\Service\UserBinanceService'
+            - '@redis_service'
 
     consumer.order:
         class: AppBundle\Consumer\OrderConsumer
         arguments:
             - '@doctrine.orm.entity_manager'
+            - '@AppBundle\Service\UserBinanceService'
 
     redis_service:
         class: AppBundle\Service\RedisService

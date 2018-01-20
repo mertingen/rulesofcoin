@@ -10,6 +10,7 @@ namespace AppBundle\Consumer;
 
 
 use AppBundle\Entity\Bid;
+use AppBundle\Service\UserBinanceService;
 use Binance\API;
 use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
@@ -19,14 +20,17 @@ class OrderConsumer implements ConsumerInterface
 {
     private $entityManager;
     private $binanceService;
+    private $userBinanceService;
 
     /**
      * RuleConsumer constructor.
      * @param EntityManagerInterface $entityManager
+     * @param UserBinanceService $userBinanceService
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, UserBinanceService $userBinanceService)
     {
         $this->entityManager = $entityManager;
+        $this->userBinanceService = $userBinanceService;
     }
 
     /**
@@ -40,9 +44,12 @@ class OrderConsumer implements ConsumerInterface
             $binanceApiKey = $order->getRule()->getUser()->getBinanceApiKey();
             $binanceSecretKey = $order->getRule()->getUser()->getBinanceSecretKey();
 
-            $binanceApi = new API($binanceApiKey, $binanceSecretKey);
-
-            $orderStatus = $binanceApi->orderStatus($order->getRule()->getSymbol(), $order->getOrderId());
+            $this->userBinanceService->connect($binanceApiKey, $binanceSecretKey);
+            $orderData = array(
+                'symbol' => $order->getRule()->getSymbol(),
+                'orderId' => $order->getOrderId()
+            );
+            $orderStatus = $this->userBinanceService->getOrderStatus($orderData);
 
             $bid = new Bid();
             $bid->setStatus($orderStatus['status']);
@@ -52,4 +59,5 @@ class OrderConsumer implements ConsumerInterface
             $this->entityManager->flush();
         }
     }
+
 }
