@@ -405,7 +405,7 @@ function getUniqueId(wizard)
  * @private
  * @method getValidEnumValue
  * @param enumType {Object} Type of enum
- * @param keyOrValue {Object} Key as `String` or value as `Integer` to check for
+ * @param keyOrValue {Object} Setting as `String` or value as `Integer` to check for
  */
 function getValidEnumValue(enumType, keyOrValue)
 {

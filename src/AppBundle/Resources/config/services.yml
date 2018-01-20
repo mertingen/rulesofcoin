@@ -8,6 +8,12 @@ services:
             $entityManager: '@Doctrine\ORM\EntityManagerInterface'
             $redisService: '@redis_service'
 
+    AppBundle\Service\TwitterService:
+        arguments:
+            $oauth: 'Abraham\TwitterOAuth\TwitterOAuth'
+            $callbackUrl: '%twitter_callback_url%'
+            $session: '@session'
+
     AppBundle\Service\UserBinanceService:
         arguments:
             $binanceApi: 'Binance\API'

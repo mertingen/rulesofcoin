@@ -50,7 +50,7 @@
                                         </h2>
                                     </div>
                                     <div class="body">
-                                        <form method="post" action="{{ path('post-key-add') }}">
+                                        <form method="post" action="{{ path('post-setting-add') }}">
                                             <label for="api_key">Api Key</label>
                                             <div class="form-group">
                                                 <div class="form-line">
@@ -85,7 +85,7 @@
                         </h2>
                     </div>
                     <div class="body">
-                        <form method="post" action="{{ path('post-key-add') }}">
+                        <form method="post" action="{{ path('post-setting-add') }}">
                             <label for="api_key">Api Key</label>
                             <div class="form-group">
                                 <div class="form-line">
@@ -105,6 +105,11 @@
                                            placeholder="Enter your Binance secret key"
                                            value="{{ app.user.binanceSecretKey }}" required>
                                 </div>
+                            </div>
+                            <label>Twitter Message Notification</label>
+                            <div class="form-group">
+                                <span>If you have <a href="{{ twitterOauthUrl }}">Twitter Login</a> here and follow <a
+                                            href="https://twitter.com/rulechain" target="_blank">Rulechain</a> account, we can send you a notification.</span>
                             </div>
                             <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
                             </button>

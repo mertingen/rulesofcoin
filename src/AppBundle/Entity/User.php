@@ -57,6 +57,12 @@ class User implements UserInterface
 
     /**
      * @var
+     * @ORM\Column(name="twitter_screen_name", type="string", length=255, nullable=true)
+     */
+    private $twitterScreenName;
+
+    /**
+     * @var
      * @ORM\OneToMany(targetEntity="AppBundle\Entity\Rule", mappedBy="user")
      */
     private $rules;
@@ -235,6 +241,7 @@ class User implements UserInterface
     {
         return $this->binanceSecretKey;
     }
+
     /**
      * Constructor
      */
@@ -275,5 +282,29 @@ class User implements UserInterface
     public function getRules()
     {
         return $this->rules;
+    }
+
+    /**
+     * Set twitterScreenName
+     *
+     * @param string $twitterScreenName
+     *
+     * @return User
+     */
+    public function setTwitterScreenName($twitterScreenName)
+    {
+        $this->twitterScreenName = $twitterScreenName;
+
+        return $this;
+    }
+
+    /**
+     * Get twitterScreenName
+     *
+     * @return string
+     */
+    public function getTwitterScreenName()
+    {
+        return $this->twitterScreenName;
     }
 }

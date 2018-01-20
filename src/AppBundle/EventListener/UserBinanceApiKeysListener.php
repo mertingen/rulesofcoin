@@ -35,10 +35,10 @@ class UserBinanceApiKeysListener implements EventSubscriberInterface
             if ($user instanceof User) {
                 if (!$user->getBinanceSecretKey() || !$user->getBinanceSecretKey()) {
                     $route = $event->getRequest()->get('_route');
-                    if ($route == 'key-add' || $route == 'post-key-add') {
+                    if ($route == 'setting-add' || $route == 'post-setting-add') {
                         return;
                     }
-                    $url = $this->router->generate('key-add');
+                    $url = $this->router->generate('setting-add');
                     $response = new RedirectResponse($url);
                     $event->setResponse($response);
                 }

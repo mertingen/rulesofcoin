@@ -4106,7 +4106,7 @@ define("tinymce/util/Tools", [
 		 *
 		 * // Iterate an object
 		 * tinymce.each({a: 1, b: 2, c: 3], function(v, k) {
-		 *     console.debug("Value: " + v + ", Key: " + k);
+		 *     console.debug("Value: " + v + ", Setting: " + k);
 		 * });
 		 */
 		each: Arr.each,
@@ -40773,7 +40773,7 @@ define("tinymce/util/LocalStorage", [], function() {
 		 *
 		 * @method key
 		 * @param {Number} index Index of key to return.
-		 * @return {String} Key value or null if it wasn't found.
+		 * @return {String} Setting value or null if it wasn't found.
 		 */
 		key: function(index) {
 			return keys[index];
@@ -40783,7 +40783,7 @@ define("tinymce/util/LocalStorage", [], function() {
 		 * Returns the value if the specified key or null if it wasn't found.
 		 *
 		 * @method getItem
-		 * @param {String} key Key of item to retrieve.
+		 * @param {String} key Setting of item to retrieve.
 		 * @return {String} Value of the specified item or null if it wasn't found.
 		 */
 		getItem: function(key) {
@@ -40794,7 +40794,7 @@ define("tinymce/util/LocalStorage", [], function() {
 		 * Sets the value of the specified item by it's key.
 		 *
 		 * @method setItem
-		 * @param {String} key Key of the item to set.
+		 * @param {String} key Setting of the item to set.
 		 * @param {String} value Value of the item to set.
 		 */
 		setItem: function(key, value) {
@@ -40806,7 +40806,7 @@ define("tinymce/util/LocalStorage", [], function() {
 		 * Removes the specified item by key.
 		 *
 		 * @method removeItem
-		 * @param {String} key Key of item to remove.
+		 * @param {String} key Setting of item to remove.
 		 */
 		removeItem: function(key) {
 			delete items[key];

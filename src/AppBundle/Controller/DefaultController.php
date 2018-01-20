@@ -11,11 +11,9 @@ class DefaultController extends Controller
 {
     /**
      * @Route("/", name="homepage")
-     * @param Request $request
-     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response
-     * @Security("has_role('ROLE_USER')")
+     * @return \Symfony\Component\HttpFoundation\RedirectResponse|\Symfony\Component\HttpFoundation\Response* @Security("has_role('ROLE_USER')")
      */
-    public function indexAction(Request $request)
+    public function indexAction()
     {
         return $this->redirectToRoute('binance-coin-list');
     }

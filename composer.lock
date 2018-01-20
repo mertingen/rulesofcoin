@@ -4,8 +4,62 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "ae2576a47b9ec9ababf1d27e54276e7f",
+    "content-hash": "5f477b7a4e8b1e059e509adecb1d0d98",
     "packages": [
+        {
+            "name": "abraham/twitteroauth",
+            "version": "0.6.6",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/abraham/twitteroauth.git",
+                "reference": "fc0766220c79087ac8178625d34e88ca29160d5b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/abraham/twitteroauth/zipball/fc0766220c79087ac8178625d34e88ca29160d5b",
+                "reference": "fc0766220c79087ac8178625d34e88ca29160d5b",
+                "shasum": ""
+            },
+            "require": {
+                "ext-curl": "*",
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "phpmd/phpmd": "2.3.*",
+                "phpunit/phpunit": "4.8.*",
+                "squizlabs/php_codesniffer": "2.3.*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Abraham\\TwitterOAuth\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Abraham Williams",
+                    "email": "abraham@abrah.am",
+                    "homepage": "https://abrah.am",
+                    "role": "Developer"
+                }
+            ],
+            "description": "The most popular PHP library for use with the Twitter OAuth REST API.",
+            "homepage": "https://twitteroauth.com",
+            "keywords": [
+                "Twitter API",
+                "Twitter oAuth",
+                "api",
+                "oauth",
+                "rest",
+                "social",
+                "twitter"
+            ],
+            "time": "2016-10-10T14:20:30+00:00"
+        },
         {
             "name": "composer/ca-bundle",
             "version": "1.1.0",
@@ -1059,12 +1113,12 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/jaggedsoft/php-binance-api.git",
-                "reference": "169e3aadd9c01239ffb25829ae08f7cdf22c52ca"
+                "reference": "e25dd24ca612f38834b51f10b64cd1c031526422"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/jaggedsoft/php-binance-api/zipball/169e3aadd9c01239ffb25829ae08f7cdf22c52ca",
-                "reference": "169e3aadd9c01239ffb25829ae08f7cdf22c52ca",
+                "url": "https://api.github.com/repos/jaggedsoft/php-binance-api/zipball/e25dd24ca612f38834b51f10b64cd1c031526422",
+                "reference": "e25dd24ca612f38834b51f10b64cd1c031526422",
                 "shasum": ""
             },
             "require": {
@@ -1093,7 +1147,7 @@
                 "cryptocurrency",
                 "websocket"
             ],
-            "time": "2018-01-06T05:43:36+00:00"
+            "time": "2018-01-19T23:20:31+00:00"
         },
         {
             "name": "jdorn/sql-formatter",
@@ -2025,16 +2079,16 @@
         },
         {
             "name": "react/socket",
-            "version": "v0.8.8",
+            "version": "v0.8.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/socket.git",
-                "reference": "e9e206b6277023bf4afd910a764f0cd3d470e7ed"
+                "reference": "9db38c58cbb1343bbe6523d1b930a40d0e110839"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/socket/zipball/e9e206b6277023bf4afd910a764f0cd3d470e7ed",
-                "reference": "e9e206b6277023bf4afd910a764f0cd3d470e7ed",
+                "url": "https://api.github.com/repos/reactphp/socket/zipball/9db38c58cbb1343bbe6523d1b930a40d0e110839",
+                "reference": "9db38c58cbb1343bbe6523d1b930a40d0e110839",
                 "shasum": ""
             },
             "require": {
@@ -2068,26 +2122,26 @@
                 "reactphp",
                 "stream"
             ],
-            "time": "2018-01-06T12:13:20+00:00"
+            "time": "2018-01-18T11:29:21+00:00"
         },
         {
             "name": "react/stream",
-            "version": "v0.7.6",
+            "version": "v0.7.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/reactphp/stream.git",
-                "reference": "4e07a0014896cbbb73e2f2b2c28e86174b6e1d4d"
+                "reference": "10100896018fd847a257cd81143b8e1b7be08e40"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/reactphp/stream/zipball/4e07a0014896cbbb73e2f2b2c28e86174b6e1d4d",
-                "reference": "4e07a0014896cbbb73e2f2b2c28e86174b6e1d4d",
+                "url": "https://api.github.com/repos/reactphp/stream/zipball/10100896018fd847a257cd81143b8e1b7be08e40",
+                "reference": "10100896018fd847a257cd81143b8e1b7be08e40",
                 "shasum": ""
             },
             "require": {
                 "evenement/evenement": "^3.0 || ^2.0 || ^1.0",
                 "php": ">=5.3.8",
-                "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3"
+                "react/event-loop": "^1.0 || ^0.5 || ^0.4 || ^0.3.5"
             },
             "require-dev": {
                 "clue/stream-filter": "~1.2",
@@ -2114,7 +2168,7 @@
                 "stream",
                 "writable"
             ],
-            "time": "2017-12-21T14:12:01+00:00"
+            "time": "2018-01-19T15:04:38+00:00"
         },
         {
             "name": "sensio/distribution-bundle",

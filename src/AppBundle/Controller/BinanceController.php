@@ -15,7 +15,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
 /**
- * Class KeyController
+ * Class SettingController
  * @package AppBundle\Controller
  * @Route("/binance")
  * @Security("has_role('ROLE_USER')")

@@ -39,7 +39,7 @@ $(function () {
     //Email
     $demoMaskedInput.find('.email').inputmask({ alias: "email" });
 
-    //Serial Key
+    //Serial Setting
     $demoMaskedInput.find('.key').inputmask('****-****-****-****', { placeholder: '____-____-____-____' });
     //===========================================================================================================================================
 
