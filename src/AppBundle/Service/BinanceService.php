@@ -146,7 +146,15 @@ class BinanceService
     public function getBtcNumberFormat($price)
     {
         return number_format($price, 8, '.', '');
+    }
 
+    /**
+     * @param array $where
+     * @return mixed
+     */
+    public function getCountUserRulesBySymbol($where = array())
+    {
+        return $this->entityManager->getRepository('AppBundle:Rule')->countUserRulesBySymbol($where);
     }
 
 }

@@ -60,11 +60,13 @@ class BinanceController extends Controller
 
         $where = array(
             'user' => $this->getUser(),
-            'symbol' => $symbol
+            'symbol' => $symbol,
+            'isDone' => false
         );
-        $isUserRule = $binanceService->getRule($where);
-        if ($isUserRule) {
-            return $this->redirectToRoute('binance-edit-rule', array('id' => $isUserRule->getId()));
+        $countUserRules = $binanceService->getCountUserRulesBySymbol($where);
+        if ($countUserRules >= $this->getParameter('rule_symbol_count_limit')) {
+            $this->flashBag->add('error', 'You can set max 4 rules to a symbol!');
+            return $this->redirectToRoute('binance-coin-list');
         }
 
         $data = $binanceService->getCoinsWithPrices($symbol);
@@ -102,12 +104,12 @@ class BinanceController extends Controller
 
         $where = array(
             'user' => $this->getUser(),
-            'symbol' => $symbol
+            'symbol' => $symbol,
+            'isDone' => false
         );
-
-        $isRule = $binanceService->getRule($where);
-        if ($isRule) {
-            $this->flashBag->add('error', 'Rule is exist!');
+        $countUserRules = $binanceService->getCountUserRulesBySymbol($where);
+        if ($countUserRules >= $this->getParameter('rule_symbol_count_limit')) {
+            $this->flashBag->add('error', 'You can set max 4 rules to a symbol!');
             return $this->redirectToRoute('binance-coin-list');
         }
 
@@ -203,12 +205,6 @@ class BinanceController extends Controller
             return $this->redirectToRoute('binance-add-rule');
         }
 
-        $symbols = $this->get('redis_service')->get('symbols');
-        if (!in_array($rule->getSymbol(), $symbols)) {
-            $this->flashBag->add('error', 'Symbol is not valid!');
-            return $this->redirectToRoute('binance-add-rule');
-        }
-
         $data = $binanceService->getCoinsWithPrices($rule->getSymbol());
         $binanceApiKey = $this->getUser()->getBinanceApiKey();
         $binanceSecretKey = $this->getUser()->getBinanceSecretKey();
@@ -244,13 +240,6 @@ class BinanceController extends Controller
             $this->flashBag->add('error', 'Rule is not found!');
             return $this->redirectToRoute('binance-coin-list');
         }
-
-        $symbols = $this->get('redis_service')->get('symbols');
-        if (!in_array($rule->getSymbol(), $symbols)) {
-            $this->flashBag->add('error', 'Symbol is not valid!');
-            return $this->redirectToRoute('binance-coin-list');
-        }
-
 
         $buyLimit = $request->request->get('buy-limit', null);
         $btcPrice = $request->request->get('btc-price', null);

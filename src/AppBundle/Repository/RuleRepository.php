@@ -2,6 +2,9 @@
 
 namespace AppBundle\Repository;
 
+use Doctrine\ORM\NonUniqueResultException;
+use Doctrine\ORM\NoResultException;
+
 /**
  * RuleRepository
  *
@@ -20,5 +23,25 @@ class RuleRepository extends \Doctrine\ORM\EntityRepository
             )->setParameter('isDone', 0);
         return $query->getResult();
 
+    }
+
+    public function countUserRulesBySymbol($where = array())
+    {
+        try {
+            return $this->createQueryBuilder('r')
+                ->andWhere('r.isDone = :isDone')
+                ->andWhere('r.user = :user')
+                ->andWhere('r.symbol = :symbol')
+                ->setParameter('isDone', $where['isDone'])
+                ->setParameter('user', $where['user'])
+                ->setParameter('symbol', $where['symbol'])
+                ->select('COUNT(r.id) as ruleId')
+                ->getQuery()
+                ->getSingleScalarResult();
+        } catch (NoResultException $e) {
+        } catch (NonUniqueResultException $e) {
+        }
+
+        //user symbol isDone
     }
 }

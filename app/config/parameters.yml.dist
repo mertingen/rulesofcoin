@@ -29,6 +29,8 @@ parameters:
     redis_cache_port: 6379
     redis_cache_keyspace: rule
 
+    rule_symbol_count_limit: 4
+
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt
 
