@@ -38,7 +38,7 @@ class SettingController extends Controller
             $this->getParameter('twitter_access_token'),
             $this->getParameter('twitter_access_secret_token')
         );
-        $twitterService->getFollowers(); die;
+        //$twitterService->getFollowers(); die;
         $oauthUrl = $twitterService->getUrl();
         return $this->render('@App/Setting/add.html.twig',
             array('twitterOauthUrl' => $oauthUrl)
