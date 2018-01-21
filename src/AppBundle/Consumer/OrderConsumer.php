@@ -85,10 +85,7 @@ class OrderConsumer implements ConsumerInterface
     {
         $message = "A order is done! [STATUS:" . $data['status'] . "] - [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
         $this->twitterService->connect(
-            $this->container->getParameter('twitter_consumer_key'),
-            $this->container->getParameter('twitter_consumer_secret_key'),
-            $this->container->getParameter('twitter_access_token'),
-            $this->container->getParameter('twitter_access_secret_token')
+            $this->container->getParameter('twitter')
         );
         $this->twitterService->sendMessage($data['screenName'], $message);
     }

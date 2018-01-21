@@ -31,11 +31,12 @@ parameters:
 
     rule_symbol_count_limit: 4
 
-    twitter_callback_url: ~
-    twitter_consumer_key: ~
-    twitter_consumer_secret_key: ~
-    twitter_access_token: ~
-    twitter_access_secret_token: ~
+    'twitter':
+      consumer_key: ~
+      consumer_secret_key: ~
+      access_token: ~
+      access_secret_token: ~
+      callback_url: ~
 
     # A secret key that's used to generate certain security-related tokens
     secret: ThisTokenIsNotSoSecretChangeIt

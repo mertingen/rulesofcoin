@@ -29,19 +29,19 @@ class TwitterService
      */
     private $session;
 
-    public function __construct($oauth, $callbackUrl = '', $session)
+    public function __construct($oauth, $twitterData = array(), $session)
     {
         $this->oauth = $oauth;
-        $this->callbackUrl = $callbackUrl;
+        $this->callbackUrl = $twitterData['callback_url'];
         $this->session = $session;
     }
 
-    public function connect($consumerKey = NULL, $consumerSecretKey = NULL, $accessToken = NULL, $accessSecretToken = NULL)
+    public function connect($twitterData = array())
     {
-        $this->consumerKey = $consumerKey;
-        $this->consumerSecretKey = $consumerSecretKey;
-        $this->accessToken = $accessToken;
-        $this->accessSecretToken = $accessSecretToken;
+        $this->consumerKey = $twitterData['consumer_key'];
+        $this->consumerSecretKey = $twitterData['consumer_secret_key'];
+        $this->accessToken = $twitterData['access_token'];
+        $this->accessSecretToken = $twitterData['access_secret_token'];
         $this->oauth = new $this->oauth(
             $this->consumerKey,
             $this->consumerSecretKey,
@@ -72,27 +72,29 @@ class TwitterService
     public function getUser($oauthVerifier = '')
     {
         try {
-            $connection = new $this->oauth(
-                $this->consumerKey,
-                $this->consumerSecretKey,
-                $this->session->get('oauthToken'),
-                $this->session->get('oauthTokenSecret')
+            $twitterData = array(
+                'consumer_key' => $this->consumerKey,
+                'consumer_secret_key' => $this->consumerSecretKey,
+                'access_token' => $this->session->get('oauthToken'),
+                'access_secret_token' => $this->session->get('oauthTokenSecret')
             );
+            $this->connect($twitterData);
 
-            $accessData = $connection->oauth("oauth/access_token", ["oauth_verifier" => $oauthVerifier]);
+            $accessData = $this->oauth->oauth("oauth/access_token", ["oauth_verifier" => $oauthVerifier]);
         } catch (TwitterOAuthException $e) {
             dump($e->getMessage());
             die;
         }
 
-        $connection = new $this->oauth(
-            $this->consumerKey,
-            $this->consumerSecretKey,
-            $accessData['oauth_token'],
-            $accessData['oauth_token_secret']
+        $twitterData = array(
+            'consumer_key' => $this->consumerKey,
+            'consumer_secret_key' => $this->consumerSecretKey,
+            'access_token' => $accessData['oauth_token'],
+            'access_secret_token' => $accessData['oauth_token_secret']
         );
 
-        $twitterUser = $connection->get("account/verify_credentials");
+        $this->connect($twitterData);
+        $twitterUser = $this->oauth->get("account/verify_credentials");
         return $twitterUser;
     }
 

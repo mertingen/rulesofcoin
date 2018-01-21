@@ -11,7 +11,7 @@ services:
     AppBundle\Service\TwitterService:
         arguments:
             $oauth: 'Abraham\TwitterOAuth\TwitterOAuth'
-            $callbackUrl: '%twitter_callback_url%'
+            $twitterData: '%twitter%'
             $session: '@session'
 
     AppBundle\Service\UserBinanceService:
@@ -34,7 +34,6 @@ services:
     consumer.order:
         class: AppBundle\Consumer\OrderConsumer
         arguments:
-            - '@AppBundle\Service\BinanceService'
             - '@AppBundle\Service\TwitterService'
             - '@Doctrine\ORM\EntityManagerInterface'
             - '@Symfony\Component\DependencyInjection\ContainerInterface'

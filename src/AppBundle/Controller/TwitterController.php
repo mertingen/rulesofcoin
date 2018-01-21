@@ -50,8 +50,7 @@ class TwitterController extends Controller
         $oauthVerifier = $request->query->get('oauth_verifier');
         try {
             $twitterService->connect(
-                $this->getParameter('twitter_consumer_key'),
-                $this->getParameter('twitter_consumer_secret_key')
+                $this->getParameter('twitter')
             );
 
             $twitterUser = $twitterService->getUser($oauthVerifier);

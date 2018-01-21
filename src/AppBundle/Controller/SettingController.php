@@ -33,10 +33,7 @@ class SettingController extends Controller
     public function addAction(TwitterService $twitterService)
     {
         $twitterService->connect(
-            $this->getParameter('twitter_consumer_key'),
-            $this->getParameter('twitter_consumer_secret_key'),
-            $this->getParameter('twitter_access_token'),
-            $this->getParameter('twitter_access_secret_token')
+            $this->getParameter('twitter')
         );
         //$twitterService->getFollowers(); die;
         $oauthUrl = $twitterService->getUrl();
