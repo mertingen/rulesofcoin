@@ -10,6 +10,7 @@ namespace AppBundle\Consumer;
 
 
 use AppBundle\Entity\Bid;
+use AppBundle\Service\TwitterService;
 use AppBundle\Service\UserBinanceService;
 use Binance\API;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,16 +22,21 @@ class OrderConsumer implements ConsumerInterface
     private $entityManager;
     private $binanceService;
     private $userBinanceService;
+    private $twitterService;
+    private $container;
 
     /**
      * RuleConsumer constructor.
+     * @param TwitterService $twitterService
      * @param EntityManagerInterface $entityManager
-     * @param UserBinanceService $userBinanceService
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      */
-    public function __construct(EntityManagerInterface $entityManager, UserBinanceService $userBinanceService)
+    public function __construct(TwitterService $twitterService, EntityManagerInterface $entityManager, \Symfony\Component\DependencyInjection\ContainerInterface $container)
     {
+        $this->container = $container;
+        $this->userBinanceService = $container->get('user_binance_service');
+        $this->twitterService = $twitterService;
         $this->entityManager = $entityManager;
-        $this->userBinanceService = $userBinanceService;
     }
 
     /**
@@ -55,9 +61,36 @@ class OrderConsumer implements ConsumerInterface
             $bid->setStatus($orderStatus['status']);
             $bid->setExecutedQuantity($orderStatus['executedQty']);
 
+            $userTwitterScreenName = $bid->getRule()->getUser()->getTwitterScreenName();
+            if ($userTwitterScreenName) {
+                $twitterMessageData = array(
+                    'screenName' => $userTwitterScreenName,
+                    'symbol' => $bid->getRule()->getSymbol(),
+                    'status' => $bid->getStatus(),
+                    'quantity' => $bid->getExecutedQuantity(),
+                    'buyLimit' => $bid->getRule()->getBuyLimit()
+                );
+                $this->sendTwitterNotification($twitterMessageData);
+            }
+
             $this->entityManager->persist($bid);
             $this->entityManager->flush();
         }
+    }
+
+    /**
+     * @param array $data
+     */
+    public function sendTwitterNotification($data = array())
+    {
+        $message = "A order is done! [STATUS:" . $data['status'] . "] - [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
+        $this->twitterService->connect(
+            $this->container->getParameter('twitter_consumer_key'),
+            $this->container->getParameter('twitter_consumer_secret_key'),
+            $this->container->getParameter('twitter_access_token'),
+            $this->container->getParameter('twitter_access_secret_token')
+        );
+        $this->twitterService->sendMessage($data['screenName'], $message);
     }
 
 }

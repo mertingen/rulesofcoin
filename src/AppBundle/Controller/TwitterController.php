@@ -58,7 +58,7 @@ class TwitterController extends Controller
             $user = $userService->get($this->getUser()->getId());
             $user->setTwitterScreenName($twitterUser->screen_name);
             $userService->upsert($user);
-            $this->flashBag->add('success', 'Twitter login successfully. If you take notifications, you should follow Rulechain Twitter accouns.');
+            $this->flashBag->add('success', 'Twitter login successfully. If you want take notifications, you should follow Rulechain Twitter account.');
             return $this->redirectToRoute('setting-add');
         } catch (TwitterOAuthException $e) {
             dump($e->getMessage());

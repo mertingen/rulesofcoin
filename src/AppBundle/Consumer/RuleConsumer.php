@@ -12,8 +12,7 @@ namespace AppBundle\Consumer;
 use AppBundle\Entity\Bid;
 use AppBundle\Entity\Rule;
 use AppBundle\Service\BinanceService;
-use AppBundle\Service\RedisService;
-use AppBundle\Service\UserBinanceService;
+use AppBundle\Service\TwitterService;
 use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
@@ -24,20 +23,24 @@ class RuleConsumer implements ConsumerInterface
     private $binanceService;
     private $userBinanceService;
     private $redisService;
+    private $twitterService;
+    private $container;
 
     /**
      * RuleConsumer constructor.
-     * @param EntityManagerInterface $entityManager
      * @param BinanceService $binanceService
-     * @param UserBinanceService $userBinanceService
-     * @param RedisService $redisService
+     * @param TwitterService $twitterService
+     * @param EntityManagerInterface $entityManager
+     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
      */
-    public function __construct(EntityManagerInterface $entityManager, BinanceService $binanceService, UserBinanceService $userBinanceService, RedisService $redisService)
+    public function __construct(BinanceService $binanceService, TwitterService $twitterService, EntityManagerInterface $entityManager, \Symfony\Component\DependencyInjection\ContainerInterface $container)
     {
-        $this->entityManager = $entityManager;
+        $this->container = $container;
         $this->binanceService = $binanceService;
-        $this->userBinanceService = $userBinanceService;
-        $this->redisService = $redisService;
+        $this->userBinanceService = $container->get('user_binance_service');
+        $this->redisService = $container->get('redis_service');
+        $this->twitterService = $twitterService;
+        $this->entityManager = $entityManager;
     }
 
     public function execute(AMQPMessage $data)
@@ -61,7 +64,18 @@ class RuleConsumer implements ConsumerInterface
                     'binanceSecretKey' => $bid['binanceSecretKey'],
                     'user' => $rule->getUser()
                 );
+
                 $this->checkUserRules($keys);
+                $userTwitterScreenName = $rule->getUser()->getTwitterScreenName();
+                if ($userTwitterScreenName) {
+                    $twitterMessageData = array(
+                        'screenName' => $userTwitterScreenName,
+                        'symbol' => $rule->getSymbol(),
+                        'quantity' => $newBid->getExecutedQuantity(),
+                        'buyLimit' => $rule->getBuyLimit()
+                    );
+                    $this->sendTwitterNotification($twitterMessageData);
+                }
 
                 $newBid->setRule($rule);
                 $newBid->setStatus('NEW');
@@ -74,6 +88,9 @@ class RuleConsumer implements ConsumerInterface
         }
     }
 
+    /**
+     * @param array $data
+     */
     public function checkUserRules($data = array())
     {
         $this->userBinanceService->connect($data['binanceApiKey'], $data['binanceSecretKey']);
@@ -91,5 +108,20 @@ class RuleConsumer implements ConsumerInterface
                 $this->redisService->insert('rules', $allRules);
             }
         }
+    }
+
+    /**
+     * @param array $data
+     */
+    public function sendTwitterNotification($data = array())
+    {
+        $message = "A rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
+        $this->twitterService->connect(
+            $this->container->getParameter('twitter_consumer_key'),
+            $this->container->getParameter('twitter_consumer_secret_key'),
+            $this->container->getParameter('twitter_access_token'),
+            $this->container->getParameter('twitter_access_secret_token')
+        );
+        $this->twitterService->sendMessage($data['screenName'], $message);
     }
 }

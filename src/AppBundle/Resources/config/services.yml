@@ -21,16 +21,23 @@ services:
     consumer.rule:
         class: AppBundle\Consumer\RuleConsumer
         arguments:
-            - '@doctrine.orm.entity_manager'
             - '@AppBundle\Service\BinanceService'
-            - '@AppBundle\Service\UserBinanceService'
-            - '@redis_service'
+            - '@AppBundle\Service\TwitterService'
+            - '@Doctrine\ORM\EntityManagerInterface'
+            - '@Symfony\Component\DependencyInjection\ContainerInterface'
+
+    user_binance_service:
+        class: AppBundle\Service\UserBinanceService
+        arguments:
+            - 'Binance\API'
 
     consumer.order:
         class: AppBundle\Consumer\OrderConsumer
         arguments:
-            - '@doctrine.orm.entity_manager'
-            - '@AppBundle\Service\UserBinanceService'
+            - '@AppBundle\Service\BinanceService'
+            - '@AppBundle\Service\TwitterService'
+            - '@Doctrine\ORM\EntityManagerInterface'
+            - '@Symfony\Component\DependencyInjection\ContainerInterface'
 
     redis_service:
         class: AppBundle\Service\RedisService

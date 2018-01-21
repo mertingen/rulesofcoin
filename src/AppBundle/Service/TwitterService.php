@@ -36,7 +36,7 @@ class TwitterService
         $this->session = $session;
     }
 
-    public function connect($consumerKey = NULL, $consumerSecretKey = NULL, $accessToken = NULL, $accessSecretToken)
+    public function connect($consumerKey = NULL, $consumerSecretKey = NULL, $accessToken = NULL, $accessSecretToken = NULL)
     {
         $this->consumerKey = $consumerKey;
         $this->consumerSecretKey = $consumerSecretKey;
@@ -55,6 +55,8 @@ class TwitterService
         try {
             $requestToken = $this->oauth->oauth('oauth/request_token', array('oauth_callback' => $this->callbackUrl));
         } catch (TwitterOAuthException $e) {
+            dump($e->getMessage());
+            die;
         }
         $oauthToken = $requestToken['oauth_token'];
         $oauthSecretToken = $requestToken['oauth_token_secret'];
@@ -94,11 +96,17 @@ class TwitterService
         return $twitterUser;
     }
 
-    public function getFollowers()
+    /**
+     * @param string $screeName
+     * @param string $message
+     */
+    public function sendMessage($screeName = '', $message = '')
     {
-        $followers = $this->oauth->get('followers/list');
-        dump($followers);
-        die;
+        $options = array("screen_name" => $screeName, "text" => $message);
+        $result = $this->oauth->post('direct_messages/new', $options);
+        /*if ($result->errors){
+            echo $result->errors; die;
+        }*/
     }
 
 }
