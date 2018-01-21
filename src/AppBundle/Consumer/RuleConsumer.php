@@ -118,7 +118,7 @@ class RuleConsumer implements ConsumerInterface
         $message = "A rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
         $this->twitterService->connect(
             $this->container->getParameter('twitter')
-    );
+        );
         $this->twitterService->sendMessage($data['screenName'], $message);
     }
 }

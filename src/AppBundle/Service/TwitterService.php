@@ -106,9 +106,9 @@ class TwitterService
     {
         $options = array("screen_name" => $screeName, "text" => $message);
         $result = $this->oauth->post('direct_messages/new', $options);
-        /*if ($result->errors){
-            echo $result->errors; die;
-        }*/
+        if ($result->errors){
+            print_r($result->errors);
+        }
     }
 
 }
