@@ -168,6 +168,13 @@
                         .attr("type", "hidden")
                         .attr("name", "btc-price").val("{{ data['btcPrice'] }}");
                     if ($('#rule-stop').val() !== '') {
+                        if ($('#rule-stop').val() > $('#buy-rule-limit').val()){
+                            iziToast.error({
+                                title: 'ERROR',
+                                message: "Stop should greater than buy limit!"
+                            });
+                            return false;
+                        }
                         if ($('#rule-stop').val() > $('.live-price').text()) {
                             var stopTypeInput = $("<input>")
                                 .attr("type", "hidden")
