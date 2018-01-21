@@ -7,6 +7,11 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 
+/**
+ * Class DefaultController
+ * @package AppBundle\Controller
+ * @Security("has_role('ROLE_USER')")
+ */
 class DefaultController extends Controller
 {
     /**

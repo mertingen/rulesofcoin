@@ -58,7 +58,7 @@ class Bid
 
     /**
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\Rule", inversedBy="bid")
-     * @ORM\JoinColumn(name="rule_id", referencedColumnName="id")
+     * @ORM\JoinColumn(name="rule_id", referencedColumnName="id", onDelete="CASCADE")
      */
     private $rule;
 
