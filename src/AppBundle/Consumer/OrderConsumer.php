@@ -46,7 +46,7 @@ class OrderConsumer implements ConsumerInterface
     public function execute(AMQPMessage $msg)
     {
         $order = unserialize($msg->body);
-        $rule = $this->entityManager->getRepository('AppBundle:Rule')->findOneBy(array('id' => $order->getRule()->getId());
+        $rule = $this->entityManager->getRepository('AppBundle:Rule')->findOneBy(array('id' => $order->getRule()->getId()));
         $user = $this->entityManager->getRepository('AppBundle:User')->findOneBy(array('id' => $rule->getUser()->getId()));
         if ($order) {
             $binanceApiKey = $user->getBinanceApiKey();
