@@ -63,7 +63,7 @@ class OrderConsumer implements ConsumerInterface
             $bid->setStatus($orderStatus['status']);
             $bid->setExecutedQuantity($orderStatus['executedQty']);
 
-            $userTwitterScreenName = $bid->getRule()->getUser()->getTwitterScreenName();
+            $userTwitterScreenName = $user->getTwitterScreenName();
             if ($userTwitterScreenName) {
                 $twitterMessageData = array(
                     'screenName' => $userTwitterScreenName,
