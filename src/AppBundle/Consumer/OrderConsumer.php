@@ -57,25 +57,27 @@ class OrderConsumer implements ConsumerInterface
             );
             $orderStatus = $this->userBinanceService->getOrderStatus($orderData);
 
-            $bid = $this->entityManager->getRepository('AppBundle:Bid')->findOneBy(array('id' => $data['bidId']));
-            if ($bid) {
-                $bid->setStatus($orderStatus['status']);
-                $bid->setExecutedQuantity($orderStatus['executedQty']);
+            if (isset($orderStatus['status']) && $orderStatus['status'] != 'NEW') {
+                $bid = $this->entityManager->getRepository('AppBundle:Bid')->findOneBy(array('id' => $data['bidId']));
+                if ($bid) {
+                    $bid->setStatus($orderStatus['status']);
+                    $bid->setExecutedQuantity($orderStatus['executedQty']);
 
-                $userTwitterScreenName = $data['twitterScreenName'];
-                if ($userTwitterScreenName) {
-                    $twitterMessageData = array(
-                        'screenName' => $userTwitterScreenName,
-                        'symbol' => $data['symbol'],
-                        'status' => $bid->getStatus(),
-                        'quantity' => $bid->getExecutedQuantity(),
-                        'buyLimit' => $data['buyLimit']
-                    );
-                    $this->sendTwitterNotification($twitterMessageData);
+                    $userTwitterScreenName = $data['twitterScreenName'];
+                    if ($userTwitterScreenName) {
+                        $twitterMessageData = array(
+                            'screenName' => $userTwitterScreenName,
+                            'symbol' => $data['symbol'],
+                            'status' => $bid->getStatus(),
+                            'quantity' => $bid->getExecutedQuantity(),
+                            'buyLimit' => $data['buyLimit']
+                        );
+                        $this->sendTwitterNotification($twitterMessageData);
+                    }
+
+                    $this->entityManager->persist($bid);
+                    $this->entityManager->flush();
                 }
-
-                $this->entityManager->persist($bid);
-                $this->entityManager->flush();
             }
         }
     }
