@@ -45,38 +45,38 @@ class OrderConsumer implements ConsumerInterface
      */
     public function execute(AMQPMessage $msg)
     {
-        $order = unserialize($msg->body);
-        $rule = $this->entityManager->getRepository('AppBundle:Rule')->findOneBy(array('id' => $order->getRule()->getId()));
-        $user = $this->entityManager->getRepository('AppBundle:User')->findOneBy(array('id' => $rule->getUser()->getId()));
-        if ($order) {
-            $binanceApiKey = $user->getBinanceApiKey();
-            $binanceSecretKey = $user->getBinanceSecretKey();
+        $data = unserialize($msg->body);
+        if (!empty($data)) {
+            $binanceApiKey = $data['binanceApiKey'];
+            $binanceSecretKey = $data['binanceSecretKey'];
 
             $this->userBinanceService->connect($binanceApiKey, $binanceSecretKey);
             $orderData = array(
-                'symbol' => $rule->getSymbol(),
-                'orderId' => $order->getOrderId()
+                'symbol' => $data['symbol'],
+                'orderId' => $data['orderId']
             );
             $orderStatus = $this->userBinanceService->getOrderStatus($orderData);
 
-            $bid = new Bid();
-            $bid->setStatus($orderStatus['status']);
-            $bid->setExecutedQuantity($orderStatus['executedQty']);
+            $bid = $this->entityManager->getRepository('AppBundle:Bid')->findOneBy(array('id' => $data['bidId']));
+            if ($bid) {
+                $bid->setStatus($orderStatus['status']);
+                $bid->setExecutedQuantity($orderStatus['executedQty']);
 
-            $userTwitterScreenName = $user->getTwitterScreenName();
-            if ($userTwitterScreenName) {
-                $twitterMessageData = array(
-                    'screenName' => $userTwitterScreenName,
-                    'symbol' => $rule->getSymbol(),
-                    'status' => $bid->getStatus(),
-                    'quantity' => $bid->getExecutedQuantity(),
-                    'buyLimit' => $bid->getRule()->getBuyLimit()
-                );
-                $this->sendTwitterNotification($twitterMessageData);
+                $userTwitterScreenName = $data['twitterScreenName'];
+                if ($userTwitterScreenName) {
+                    $twitterMessageData = array(
+                        'screenName' => $userTwitterScreenName,
+                        'symbol' => $data['symbol'],
+                        'status' => $bid->getStatus(),
+                        'quantity' => $bid->getExecutedQuantity(),
+                        'buyLimit' => $data['buyLimit']
+                    );
+                    $this->sendTwitterNotification($twitterMessageData);
+                }
+
+                $this->entityManager->persist($bid);
+                $this->entityManager->flush();
             }
-
-            $this->entityManager->persist($bid);
-            $this->entityManager->flush();
         }
     }
 

@@ -33,7 +33,16 @@ class BinanceOrderCheckCommand extends ContainerAwareCommand
         $orders = $entityManager->getRepository('AppBundle:Bid')->findBy(array('status' => 'NEW'));
         if ($orders) {
             foreach ($orders as $order) {
-                $this->getContainer()->get('old_sound_rabbit_mq.order_producer')->publish(serialize($order));
+                $data = array(
+                    'binanceApiKey' => $order->getRule()->getUser()->getBinanceApiKey(),
+                    'binanceSecretKey' => $order->getRule()->getUser()->getBinanceSecretKey(),
+                    'twitterScreenName' => $order->getRule()->getUser()->getTwitterScreenName(),
+                    'symbol' => $order->getRule()->getSymbol(),
+                    'orderId' => $order->getOrderId(),
+                    'bidId' => $order->getId(),
+                    'buyLimit' => $order->getRule()->getBuyLimit()
+                );
+                $this->getContainer()->get('old_sound_rabbit_mq.order_producer')->publish(serialize($data));
             }
         }
 
