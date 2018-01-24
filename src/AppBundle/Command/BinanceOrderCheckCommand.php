@@ -30,7 +30,7 @@ class BinanceOrderCheckCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $entityManager = $this->getContainer()->get('doctrine.orm.default_entity_manager');
-        $orders = $entityManager->getRepository('AppBundle:Bid');
+        $orders = $entityManager->getRepository('AppBundle:Bid')->findBy(array('status' => 'NEW'));
         if ($orders) {
             foreach ($orders as $order) {
                 $this->getContainer()->get('old_sound_rabbit_mq.rule_producer')->publish(serialize($order));

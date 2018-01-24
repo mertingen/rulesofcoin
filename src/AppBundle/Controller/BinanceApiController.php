@@ -46,8 +46,5 @@ class BinanceApiController extends Controller
     {
         $result = json_decode(file_get_contents("https://www.bitstamp.net/api/ticker/"));
         return new JsonResponse(array('usd' => $result->open));
-
     }
-
-
 }
