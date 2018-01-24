@@ -46,13 +46,15 @@ class OrderConsumer implements ConsumerInterface
     public function execute(AMQPMessage $msg)
     {
         $order = unserialize($msg->body);
+        $rule = $this->entityManager->getRepository('AppBundle:Rule')->findOneBy(array('id' => $order->getRule()->getId());
+        $user = $this->entityManager->getRepository('AppBundle:User')->findOneBy(array('id' => $rule->getUser()->getId()));
         if ($order) {
-            $binanceApiKey = $order->getRule()->getUser()->getBinanceApiKey();
-            $binanceSecretKey = $order->getRule()->getUser()->getBinanceSecretKey();
+            $binanceApiKey = $user->getBinanceApiKey();
+            $binanceSecretKey = $user->getBinanceSecretKey();
 
             $this->userBinanceService->connect($binanceApiKey, $binanceSecretKey);
             $orderData = array(
-                'symbol' => $order->getRule()->getSymbol(),
+                'symbol' => $rule->getSymbol(),
                 'orderId' => $order->getOrderId()
             );
             $orderStatus = $this->userBinanceService->getOrderStatus($orderData);
@@ -65,7 +67,7 @@ class OrderConsumer implements ConsumerInterface
             if ($userTwitterScreenName) {
                 $twitterMessageData = array(
                     'screenName' => $userTwitterScreenName,
-                    'symbol' => $bid->getRule()->getSymbol(),
+                    'symbol' => $rule->getSymbol(),
                     'status' => $bid->getStatus(),
                     'quantity' => $bid->getExecutedQuantity(),
                     'buyLimit' => $bid->getRule()->getBuyLimit()
