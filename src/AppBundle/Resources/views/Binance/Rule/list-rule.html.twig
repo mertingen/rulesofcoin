@@ -50,7 +50,7 @@
                                     <th>{{ rule.quantity }}</th>
                                     <th>{{ rule.stop }}</th>
                                     <td>{{ rule.buyLimit }}</td>
-                                    <td id="{{ rule.symbol | lower }}"></td>
+                                    <td class="{{ rule.symbol | lower }}"></td>
                                     <td>
                                         {% if rule.isDone %}
                                             <i class="material-icons">done</i>
@@ -59,15 +59,22 @@
                                         {% endif %}
                                     </td>
                                     <td>
-                                        <a data-toggle="confirmation"
-                                           href="{{ path('binance-edit-rule', {id: rule.id}) }}"
-                                           class="btn fancybox default edit btn-xs green"
-                                           title="Edit"><i class="material-icons">edit</i></a>
-                                        <a data-toggle="confirmation"
-                                           href="{{ path('binance-delete-rule', {id: rule.id}) }}"
-                                           data-type="confirm"
-                                           class="btn fancybox default delete btn-xs green"
-                                           title="Delete"><i class="material-icons">delete</i></a>
+                                        {% if rule.isDone == false %}
+                                            <a data-toggle="confirmation"
+                                               href="{{ path('binance-edit-rule', {id: rule.id}) }}"
+                                               class="btn fancybox default edit btn-xs green"
+                                               title="Edit"><i class="material-icons">edit</i></a>
+                                            <a data-toggle="confirmation"
+                                               href="{{ path('binance-delete-rule', {id: rule.id}) }}"
+                                               data-type="confirm"
+                                               class="btn fancybox default delete btn-xs green"
+                                               title="Delete"><i class="material-icons">delete</i></a>
+                                        {% else %}
+                                            <a href="#"
+                                               class="btn fancybox default edit btn-xs green show-order"
+                                               data-id="{{ rule.id }}" data-href="{{ path('binance-api-get-bid', {id: rule.bid.id}) }}" data-toggle="modal" data-target="#defaultModal"
+                                               title="Show"><i class="material-icons">remove_red_eye</i></a>
+                                        {% endif %}
                                     </td>
                                 </tr>
                                 {% set counter = counter + 1 %}
@@ -80,7 +87,51 @@
         </div>
     </div>
 
-
+    <div class="modal fade" id="defaultModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="defaultModalLabel">Order (#<label id="order-id"></label>)</h4>
+                </div>
+                <div class="modal-body">
+                    <form id="form_advanced_validation"
+                          action="">
+                        <label>Executed Quantity</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="number" class="form-control" id="order-quantity"
+                                       placeholder="" name=""
+                                       value=""
+                                       minlength="1"
+                                       required disabled>
+                            </div>
+                        </div>
+                        <label>Order Date</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="text" class="form-control" id="order-date"
+                                       placeholder="" value=""
+                                       maxlength="10"
+                                       minlength="10"
+                                       required disabled>
+                            </div>
+                        </div>
+                        <label>Status</label>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <input type="text" class="form-control" id="order-status"
+                                       placeholder="" value="" maxlength="10"
+                                       minlength="10" disabled>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-link waves-effect" data-dismiss="modal">CLOSE</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
 
@@ -112,9 +163,9 @@
                                     prices[key] = data.p;
                                 } else {
                                     if (prices[key] > data.p) {
-                                        $('#' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
+                                        $('.' + key.toLowerCase()).text(data.p).css('color', '#FD3F32');
                                     } else {
-                                        $('#' + key.toLowerCase()).text(data.p).css('color', '#5AE25A');
+                                        $('.' + key.toLowerCase()).text(data.p).css('color', '#5AE25A');
                                     }
                                 }
                             };
@@ -145,6 +196,22 @@
                             });
                         });
                     }
+                });
+
+                $('.show-order').click(function (event) {
+                    event.preventDefault();
+                    var orderUrl = $(this).data('href');
+                    $.ajax
+                    ({
+                        type: "GET",
+                        url: orderUrl,
+                        success: function (data) {
+                            $('#order-quantity').val(data.executedQuantity);
+                            $('#order-date').val(data.date);
+                            $('#order-status').val(data.status);
+                            $('#order-id').text(data.orderId)
+                        }
+                    });
                 });
 
                 {% for label, messages in app.flashes(['success']) %}

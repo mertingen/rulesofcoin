@@ -9,6 +9,9 @@
 namespace AppBundle\Controller;
 
 
+use AppBundle\Entity\Bid;
+use AppBundle\Service\BidService;
+use AppBundle\Service\BinanceService;
 use AppBundle\Service\UserBinanceService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -40,11 +43,38 @@ class BinanceApiController extends Controller
     }
 
     /**
-     * @Route("user-btc-to-usd", name="binance-api-user-btc-to-usd")
+     * @Route("/user-btc-to-usd", name="binance-api-user-btc-to-usd")
      */
     public function getUserBtcToUsdAction()
     {
         $result = json_decode(file_get_contents("https://www.bitstamp.net/api/ticker/"));
         return new JsonResponse(array('usd' => $result->open));
+    }
+
+    /**
+     * @Route("/bid/{id}", methods={"GET"}, name="binance-api-get-bid")
+     * @param Bid|null $bid
+     * @param BinanceService $binanceService
+     * @return JsonResponse
+     */
+    public function getBid(Bid $bid = NULL, BinanceService $binanceService)
+    {
+        if (!$bid) {
+            return new JsonResponse(array('error' => true, 'message' => 'Order not found!'));
+        }
+
+        $rule = $binanceService->getRule(array('id' => $bid->getRule()->getId(), 'user' => $this->getUser()));
+        if ($rule){
+            return new JsonResponse(
+                array(
+                    'executedQuantity' => $bid->getExecutedQuantity(),
+                    'date' => $bid->getCreatedAt()->format('d.m.Y H:i:s'),
+                    'status' => $bid->getStatus(),
+                    'orderId' => $bid->getOrderId()
+                )
+            );
+        }
+
+
     }
 }
