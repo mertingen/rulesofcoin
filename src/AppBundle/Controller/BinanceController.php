@@ -53,6 +53,10 @@ class BinanceController extends Controller
     public function addRuleAction($symbol = NULL, BinanceService $binanceService, UserBinanceService $userBinanceService, FlashBagInterface $flashBag)
     {
         $symbols = $this->get('redis_service')->get('symbols');
+        if (!$symbols) {
+            $this->flashBag->add('error', 'Coins are not take from api!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
         if (!in_array($symbol, $symbols)) {
             $this->flashBag->add('error', 'Symbol is not valid!');
             return $this->redirectToRoute('binance-coin-list');
@@ -96,7 +100,10 @@ class BinanceController extends Controller
     function postAddRuleAction($symbol = NULL, BinanceService $binanceService, Request $request, UserService $userService)
     {
         $symbols = $this->get('redis_service')->get('symbols');
-
+        if (!$symbols) {
+            $this->flashBag->add('error', 'Coins are not take from api!');
+            return $this->redirectToRoute('binance-coin-list');
+        }
         if (!in_array($symbol, $symbols)) {
             $this->flashBag->add('error', 'Symbol is not valid!');
             return $this->redirectToRoute('binance-coin-list');
