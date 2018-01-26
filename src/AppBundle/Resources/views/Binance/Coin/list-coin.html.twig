@@ -29,7 +29,7 @@
                             <tbody>
                             {% for name,price in coins %}
                                 <tr class="list-item-block">
-                                    <td>{{ name }}</td>
+                                    <td><a href="https://www.binance.com/tradeDetail.html?symbol={{ name }}" target="_blank">{{ name }}</a></td>
                                     <td id="{{ name | lower }}">{{ price }}</td>
                                     <td>
                                         <a data-toggle="confirmation"

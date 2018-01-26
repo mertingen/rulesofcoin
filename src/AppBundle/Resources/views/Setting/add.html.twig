@@ -110,6 +110,8 @@
                             <div class="form-group">
                                 <span>If you have <a href="{{ twitterOauthUrl }}">Twitter Login</a> here and follow <a
                                             href="https://twitter.com/rulechain" target="_blank">Rulechain</a> account, we can send you a notification.</span>
+                                <a href="{{ path('api-remove-user-twitter-screen-name', {id: app.user.id}) }}"
+                                   id="remove-twitter-screen-name">{{ (app.user.twitterScreenName) ? '(Unlink Twitter Notification)' : '' }}</a>
                             </div>
                             <button type="submit" class="btn btn-primary m-t-15 waves-effect">SAVE
                             </button>
@@ -135,6 +137,27 @@
                     $('#finish-text').hide();
                     $('.card').show();
                 }
+            });
+
+            $('#remove-twitter-screen-name').click(function (e) {
+                e.preventDefault();
+                var that = $(this);
+                var url = that.attr('href');
+                console.log(url);
+                $.ajax
+                ({
+                    type: "GET",
+                    url: url,
+                    success: function (data) {
+                        if (!data.error) {
+                            iziToast.success({
+                                title: 'SUCCESS',
+                                message: data.message
+                            });
+                            that.hide();
+                        }
+                    }
+                });
             });
 
             {% for label, messages in app.flashes(['success']) %}

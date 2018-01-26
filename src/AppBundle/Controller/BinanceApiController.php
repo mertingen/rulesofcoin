@@ -10,7 +10,6 @@ namespace AppBundle\Controller;
 
 
 use AppBundle\Entity\Bid;
-use AppBundle\Service\BidService;
 use AppBundle\Service\BinanceService;
 use AppBundle\Service\UserBinanceService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
@@ -74,7 +73,5 @@ class BinanceApiController extends Controller
                 )
             );
         }
-
-
     }
 }
