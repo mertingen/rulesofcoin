@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
  * @ORM\Table(name="bid")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\BidRepository")
  */
-class Bid
+class Bid implements \JsonSerializable
 {
     /**
      * @var int
@@ -215,5 +215,24 @@ class Bid
     public function getExecutedQuantity()
     {
         return $this->executedQuantity;
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return array(
+            'id' => $this->getId(),
+            'createdAt' => $this->getCreatedAt()->format('d.m.Y H:i:s'),
+            'status' => $this->getStatus(),
+            'orderId' => $this->getOrderId(),
+            'clientOrderId' => $this->getClientOrderId(),
+            'executedQuantity' => $this->getExecutedQuantity()
+        );
     }
 }

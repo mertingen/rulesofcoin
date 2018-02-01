@@ -24,6 +24,7 @@
                                 <th>Limit</th>
                                 <th>Current Price</th>
                                 <th>Is Done</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                             </thead>
@@ -37,6 +38,7 @@
                                 <th>Limit</th>
                                 <th>Current Price</th>
                                 <th>Is Done</th>
+                                <th>Date</th>
                                 <th>Actions</th>
                             </tr>
                             </tfoot>
@@ -49,7 +51,7 @@
                                     <th>{{ rule.btcPrice }}</th>
                                     <th>{{ rule.quantity }}</th>
                                     <th>{{ rule.stop }}</th>
-                                    <td>{{ rule.buyLimit }}</td>
+                                    <td>{{ rule.ruleLimit }}</td>
                                     <td class="{{ rule.symbol | lower }}"></td>
                                     <td>
                                         {% if rule.isDone %}
@@ -57,6 +59,9 @@
                                         {% else %}
                                             <i class="material-icons">error_outline</i>
                                         {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ rule.createdAt|date('d.m.Y H:i:s') }}
                                     </td>
                                     <td>
                                         {% if rule.isDone == false %}
@@ -72,7 +77,9 @@
                                         {% else %}
                                             <a href="#"
                                                class="btn fancybox default edit btn-xs green show-order"
-                                               data-id="{{ rule.id }}" data-href="{{ path('binance-api-get-bid', {id: rule.bid.id}) }}" data-toggle="modal" data-target="#defaultModal"
+                                               data-id="{{ rule.id }}"
+                                               data-href="{{ path('binance-api-get-bid', {id: rule.bid.id}) }}"
+                                               data-toggle="modal" data-target="#defaultModal"
                                                title="Show"><i class="material-icons">remove_red_eye</i></a>
                                         {% endif %}
                                     </td>
@@ -206,10 +213,17 @@
                         type: "GET",
                         url: orderUrl,
                         success: function (data) {
-                            $('#order-quantity').val(data.executedQuantity);
-                            $('#order-date').val(data.date);
-                            $('#order-status').val(data.status);
-                            $('#order-id').text(data.orderId)
+                            if (!data.error) {
+                                $('#order-quantity').val(data.bid.executedQuantity);
+                                $('#order-date').val(data.bid.createdAt);
+                                $('#order-status').val(data.bid.status);
+                                $('#order-id').text(data.bid.orderId)
+                            } else {
+                                iziToast.error({
+                                    title: 'ERROR',
+                                    message: data.message
+                                });
+                            }
                         }
                     });
                 });

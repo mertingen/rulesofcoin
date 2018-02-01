@@ -55,7 +55,7 @@ class BinanceService
         if ($coins && is_array($coins)) {
             $btcCoins = [];
             foreach ($coins as $key => $price) {
-                if (strpos(strtolower($key), 'btc') > -1) {
+                if (strpos(strtolower($key), 'btc') > -1 && strtolower($key) != 'btcusdt') {
                     $btcCoins[$key] = $price;
                 }
             }
@@ -90,12 +90,13 @@ class BinanceService
 
     /**
      * @param array $where
+     * @param array $orderBy
      * @return Rule|null|object
      */
-    public function getRules($where = array())
+    public function getRules($where = array(), $orderBy = array())
     {
         $ruleRepo = $this->entityManager->getRepository('AppBundle:Rule');
-        return $ruleRepo->findBy($where);
+        return $ruleRepo->findBy($where, $orderBy);
     }
 
     /**
@@ -126,7 +127,7 @@ class BinanceService
         foreach ($rules as $rule) {
             $data[$rule->getSymbol()][$rule->getId()] = array(
                 'ruleId' => $rule->getId(),
-                'buyLimit' => $rule->getBuyLimit(),
+                'ruleLimit' => $rule->getRuleLimit(),
                 'stop' => $rule->getStop(),
                 'binance_api_key' => $user->getBinanceApiKey(),
                 'binance_secret_key' => $user->getBinanceSecretKey(),

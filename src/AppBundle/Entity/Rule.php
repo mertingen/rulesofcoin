@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
+use JsonSerializable;
 
 /**
  * Rule
@@ -11,7 +12,7 @@ use Doctrine\ORM\Mapping\JoinColumn;
  * @ORM\Table(name="rule")
  * @ORM\Entity(repositoryClass="AppBundle\Repository\RuleRepository")
  */
-class Rule
+class Rule implements JsonSerializable
 {
     /**
      * @var int
@@ -46,9 +47,9 @@ class Rule
     /**
      * @var string
      *
-     * @ORM\Column(name="buy_limit", type="string", length=255)
+     * @ORM\Column(name="rule_limit", type="string", length=255)
      */
-    private $buyLimit;
+    private $ruleLimit;
 
     /**
      * @var string
@@ -56,6 +57,13 @@ class Rule
      * @ORM\Column(name="btc_price", type="string", length=255)
      */
     private $btcPrice;
+
+    /**
+     * @var string
+     *
+     * @ORM\Column(name="type", type="string", length=255)
+     */
+    private $type;
 
     /**
      * @var string
@@ -76,6 +84,12 @@ class Rule
      * @ORM\Column(name="is_done", type="boolean")
      */
     private $isDone;
+
+    /**
+     *
+     * @ORM\Column(name="parent_rule_id", type="integer", nullable=true)
+     */
+    private $parentRuleId;
 
     /**
      * @var
@@ -221,27 +235,24 @@ class Rule
     }
 
     /**
-     * Set buyLimit
      *
-     * @param string $buyLimit
-     *
+     * @param $ruleLimit
      * @return Rule
      */
-    public function setBuyLimit($buyLimit)
+    public function setRuleLimit($ruleLimit)
     {
-        $this->buyLimit = $buyLimit;
+        $this->ruleLimit = $ruleLimit;
 
         return $this;
     }
 
     /**
-     * Get buyLimit
      *
      * @return string
      */
-    public function getBuyLimit()
+    public function getRuleLimit()
     {
-        return $this->buyLimit;
+        return $this->ruleLimit;
     }
 
     /**
@@ -338,5 +349,77 @@ class Rule
     public function getStopType()
     {
         return $this->stopType;
+    }
+
+    /**
+     * Set type
+     *
+     * @param string $type
+     *
+     * @return Rule
+     */
+    public function setType($type)
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
+    /**
+     * Get type
+     *
+     * @return string
+     */
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    /**
+     * Specify data which should be serialized to JSON
+     * @link http://php.net/manual/en/jsonserializable.jsonserialize.php
+     * @return mixed data which can be serialized by <b>json_encode</b>,
+     * which is a value of any type other than a resource.
+     * @since 5.4.0
+     */
+    public function jsonSerialize()
+    {
+        return array(
+            'id' => $this->getId(),
+            'symbol' => $this->getSymbol(),
+            'createdAt' => $this->getCreatedAt()->format('d.m.Y H:i:s'),
+            'isDone' => $this->getIsDone(),
+            'stop' => $this->getStop(),
+            'ruleLimit' => $this->getRuleLimit(),
+            'btcPrice' => $this->getBtcPrice(),
+            'quantity' => $this->getQuantity(),
+            'stopType' => $this->getStopType(),
+            'type' => $this->getType(),
+            'parentRuleId' => $this->getParentRuleId()
+        );
+    }
+
+    /**
+     * Set parentRuleId
+     *
+     * @param integer $parentRuleId
+     *
+     * @return Rule
+     */
+    public function setParentRuleId($parentRuleId)
+    {
+        $this->parentRuleId = $parentRuleId;
+
+        return $this;
+    }
+
+    /**
+     * Get parentRuleId
+     *
+     * @return integer
+     */
+    public function getParentRuleId()
+    {
+        return $this->parentRuleId;
     }
 }

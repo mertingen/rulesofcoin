@@ -41,15 +41,25 @@ class UserBinanceService
         return $btcAvailable;
     }
 
+    public function getUserSymbolPrice($symbol = '')
+    {
+        if (strpos($symbol, 'BTC') > -1) {
+            $symbol = str_replace('BTC', '', $symbol);
+        }
+
+        $symbolAvailable = $this->api->balances()[$symbol]['available'];
+        return $symbolAvailable;
+    }
+
     /**
      * @param int $price
      * @param string $symbol
-     * @return array
+     * @return float|int
      */
     public function getSymbolQuantityByBtc($price = 0, $symbol = '')
     {
         $btcAvailable = $this->api->balances()['BTC']['available'];
-        $quantity = intval($btcAvailable / $price);
+        $quantity = $btcAvailable / $price;
         return $quantity;
     }
 
