@@ -87,7 +87,7 @@ class Rule implements JsonSerializable
 
     /**
      *
-     * @ORM\Column(name="parent_rule_id", type="integer", nullable=true)
+     * @ORM\Column(name="parent_rule_id", type="string", nullable=true)
      */
     private $parentRuleId;
 

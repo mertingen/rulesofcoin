@@ -77,7 +77,7 @@ class BinanceApiController extends Controller
             !is_numeric($ruleLimit) ||
             !is_numeric($btcPrice)
         ) {
-            return new JsonResponse(array('error' => true, 'message' => 'Parameters not valid!'));
+            return new JsonResponse(array('error' => true, 'message' => 'Balance is not enough!'));
         }
 
         if ($ruleType != 'BUY' && $ruleType != 'SELL') {
@@ -91,7 +91,7 @@ class BinanceApiController extends Controller
         }
 
         if ($btcPrice < 0.00010000) {
-            return new JsonResponse(array('error' => true, 'message' => 'Btc Price should bigger 0.0001!'));
+            return new JsonResponse(array('error' => true, 'message' => 'Balance is not enough!'));
         }
 
         $parentRule = NULL;
@@ -110,7 +110,7 @@ class BinanceApiController extends Controller
         if ($ruleType == 'BUY') {
             $validBtcPrice = $binanceService->getBtcNumberFormat(floatval($quantity * $ruleLimit));
             if ($btcPrice < $validBtcPrice) {
-                return new JsonResponse(array('error' => true, 'message' => 'Balance is not enoough!'));
+                return new JsonResponse(array('error' => true, 'message' => 'Balance is not enough!'));
             }
         } elseif ($ruleType == 'SELL') {
             $userBinanceService->connect($this->getUser()->getBinanceApiKey(),
