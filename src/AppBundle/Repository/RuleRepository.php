@@ -42,6 +42,5 @@ class RuleRepository extends \Doctrine\ORM\EntityRepository
         } catch (NonUniqueResultException $e) {
         }
 
-        //user symbol isDone
     }
 }

@@ -79,24 +79,37 @@ class BinanceService
 
     /**
      * @param array $where
-     * @return Rule|null|object
+     * @return Rule|bool|object
      */
     public function getRule($where = array())
     {
-        $ruleRepo = $this->entityManager->getRepository('AppBundle:Rule');
-        return $ruleRepo->findOneBy($where);
+        $rule = $this->entityManager->getRepository('AppBundle:Rule')->findOneBy($where);
+        if ($rule) {
+            $haveParentOrChildRule = $this->checkRuleParentOrChild($rule);
+            $rule->setHaveParentOrChildRule($haveParentOrChildRule);
+            return $rule;
+        } else {
+            return false;
+        }
     }
 
 
     /**
      * @param array $where
      * @param array $orderBy
-     * @return Rule|null|object
+     * @return array
      */
     public function getRules($where = array(), $orderBy = array())
     {
         $ruleRepo = $this->entityManager->getRepository('AppBundle:Rule');
-        return $ruleRepo->findBy($where, $orderBy);
+        $allRules = $ruleRepo->findBy($where, $orderBy);
+        $rules = array();
+        foreach ($allRules as $rule) {
+            $haveParentOrChildRule = $this->checkRuleParentOrChild($rule);
+            $rule->setHaveParentOrChildRule($haveParentOrChildRule);
+            $rules[] = $rule;
+        }
+        return $rules;
     }
 
     /**
@@ -156,6 +169,20 @@ class BinanceService
     public function getCountUserRulesBySymbol($where = array())
     {
         return $this->entityManager->getRepository('AppBundle:Rule')->countUserRulesBySymbol($where);
+    }
+
+    /**
+     * @param Rule $rule
+     * @return bool
+     */
+    public function checkRuleParentOrChild(Rule $rule)
+    {
+        $parentRule = $rule->getParentRule();
+        $childRule = $this->getRule(
+            array('parentRule' => $rule)
+        );
+        return ($parentRule || $childRule) ? true : false;
+
     }
 
 }

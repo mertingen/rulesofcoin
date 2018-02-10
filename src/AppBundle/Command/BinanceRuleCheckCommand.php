@@ -28,7 +28,7 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
             $binanceApi->trades($symbols, function ($api, $symbol, $trades) {
                 $rules = $this->getRedisService()->get('rules');
                 if (isset($rules[$symbol])) {
-                    foreach ($rules[$symbol] as $ruleId => &$symbolRule) {
+                    foreach ($rules[$symbol] as $ruleId => $symbolRule) {
                         $quantity = intval($symbolRule['quantity']);
                         if (isset($symbolRule['stop']) && is_numeric($symbolRule['stop']) && $symbolRule['stop'] > 0 && isset($symbolRule['stopType'])) {
                             if ($symbolRule['stopType'] == 'smaller' && $trades['price'] <= $symbolRule['stop']) {

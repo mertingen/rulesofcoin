@@ -74,31 +74,25 @@ class BinanceController extends Controller
         }
 
         $data = $binanceService->getCoinsWithPrices($symbol);
-        $symbolRules = $binanceService->getRules($where, array('type' => 'ASC'));
         $userBinanceService->connect(
             $this->getUser()->getBinanceApiKey(),
             $this->getUser()->getBinanceSecretKey()
         );
         $data['quantity'] = $userBinanceService->getSymbolQuantityByBtc($data['price'], $data['symbol']);
-        if (intval($data['quantity']) < 1){
-            $data['quantity'] = $binanceService->getBtcNumberFormat($data['quantity']);
-        } else {
-            $data['quantity'] = intval($data['quantity']);
-        }
-        $data['quantity'] = 2500;
-        //$data['btcPrice'] = $userBinanceService->getUserBtcPrice();
-        $data['btcPrice'] = 0.09000000;
+        $data['quantity'] = (intval($data['quantity']) < 1) ? $binanceService->getBtcNumberFormat($data['quantity']) : intval($data['quantity']);
+
+        $data['btcPrice'] = $userBinanceService->getUserBtcPrice();
+        //$data['btcPrice'] = 0.08573670;
         //$data['symbolPrice'] = $userBinanceService->getUserSymbolPrice($symbol);
         //$data['symbolQuantity'] = $data['symbolPrice'];
         $data['symbolPrice'] = 1618.87654321;
         $data['symbolQuantity'] = 1618;
-        if (intval($data['symbolQuantity']) < 1){
+        if (intval($data['symbolQuantity']) < 1) {
             $data['symbolQuantity'] = $binanceService->getBtcNumberFormat($data['symbolQuantity']);
         } else {
             $data['symbolQuantity'] = intval($data['symbolQuantity']);
         }
-        $data['symbolRules'] = $symbolRules;
-
+        $data['insertedRules'] = $binanceService->getRules(array('user' => $this->getUser(), 'symbol' => $symbol));
 
         return $this->render('@App/Binance/Rule/add-rule.html.twig',
             array(

@@ -6,11 +6,16 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
 
             <div class="card col-lg-5 col-md-5 col-sm-5 col-xs-5" style="width: 48%;">
+                <a style="position: absolute; top: 0;right: 0;font-size: 18px; display: none;"
+                   data-toggle="confirmation"
+                   href="#"
+                   id="buy-edit-cancel-button"
+                   class="btn fancybox default btc-circle edit btn-xs green"
+                   title="Edit"><i id="buy-edit-cancel-icon" class="material-icons">edit</i></a>
                 <div class="header">
                     <h2>
                         <b>BUY {{ data['symbol'] }}</b> (<span
                                 id="{{ data['symbol'] | lower }}" class="live-price">{{ data['price'] }}</span>)
-
                     </h2>
                 </div>
                 <div class="body">
@@ -23,15 +28,21 @@
                             <a class="buy-percent" data-percent="75">[%75]</a>
                             <a class="buy-percent" data-percent="50">[%50]</a>
                             <a class="buy-percent" data-percent="25">[%25]</a>
+                            <label class="form-group"> <span
+                                        id="" style="margin: 5px;"></span></label>
                         </label>
-                        <label>Pipe Rule</label>
+                        <label>Parent Rule</label>
                         <div class="form-group form-float">
                             <select class="form-control show-tick rule-select" name="rule-parent-id" id="buy-select">
                                 <option value="" data-href="">-- Any Rule --</option>
-                                {% for rule in data['symbolRules'] %}
-                                    <option data-href="{{ path('binance-api-get-rule', {id: rule.id}) }}"
+                                {% for rule in data['insertedRules'] %}
+                                    <option class="option-{{ rule.id }}"
+                                            data-href="{{ path('binance-api-get-rule', {id: rule.id}) }}"
                                             data-rule-quantity="{{ rule.quantity }}"
                                             data-rule-type="{{ rule.type }}"
+                                            data-rule-btc="{{ rule.btcPrice }}"
+                                            data-rule-gain-btc="{{ rule.gainBtcPrice }}"
+                                            data-rule-gain-quantity="{{ rule.gainQuantity }}"
                                             value="{{ rule.id }}">{{ rule.type ~ " [PRICE:" ~ rule.btcPrice ~ " - STOP:" ~ rule.stop ~ "] - [QUANTITY:" ~ rule.quantity ~ "] - [DATE:" ~ rule.createdAt|date('d.m.Y') ~ "]" }}</option>
                                 {% endfor %}
                             </select>
@@ -74,6 +85,12 @@
 
 
             <div class="card col-lg-5 col-md-5 col-sm-5 col-xs-5 right" style="width: 48%;">
+                <a style="position: absolute; top: 0;right: 0;font-size: 18px; display: none;"
+                   data-toggle="confirmation"
+                   href="#"
+                   id="sell-edit-cancel-button"
+                   class="btn fancybox default btc-circle edit btn-xs green"
+                   title="Edit"><i id="sell-edit-cancel-icon" class="material-icons">edit</i></a>
                 <div class="header">
                     <h2>
                         <b>SELL {{ data['symbol'] }}</b> (<span
@@ -91,16 +108,19 @@
                             <a class="sell-percent" data-percent="75">[%75]</a>
                             <a class="sell-percent" data-percent="50">[%50]</a>
                             <a class="sell-percent" data-percent="25">[%25]</a>
-                            <label class="form-group">BTC: <span
-                                        id="sell-btc-price">{{ data['btcPrice'] | number_format(8) }}</span></label>
+                            <label class="form-group">Gain BTC: <span
+                                        id="sell-btc-price"></span></label>
                         </label>
-                        <label>Pipe Rule</label>
+                        <label>Parent Rule</label>
                         <div class="form-group form-float">
                             <select class="form-control show-tick rule-select" name="rule-parent-id" id="sell-select">
                                 <option value="" data-href="">-- Any Rule --</option>
-                                {% for rule in data['symbolRules'] %}
-                                    <option data-rule-quantity="{{ rule.quantity }}"
+                                {% for rule in data['insertedRules'] %}
+                                    <option class="option-{{ rule.id }}" data-rule-quantity="{{ rule.quantity }}"
                                             data-rule-type="{{ rule.type }}"
+                                            data-rule-btc="{{ rule.btcPrice }}"
+                                            data-rule-gain-btc="{{ rule.gainBtcPrice }}"
+                                            data-rule-gain-quantity="{{ rule.gainQuantity }}"
                                             data-href="{{ path('binance-api-get-rule', {id: rule.id}) }}"
                                             value="{{ rule.id }}">{{ rule.type ~ " [PRICE:" ~ rule.btcPrice ~ " - STOP:" ~ rule.stop ~ "] - [QUANTITY:" ~ rule.quantity ~ "] - [DATE:" ~ rule.createdAt|date('d.m.Y') ~ "]" }}</option>
                                 {% endfor %}
@@ -144,6 +164,64 @@
 
         </div>
     </div>
+
+
+    <div class="row clearfix">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <div class="card">
+                <div class="header">
+                    <h2>
+                        {{ data['symbol'] }} Rules
+                        <small>You can take actions for your rules.</small>
+                    </h2>
+                </div>
+                <div class="body table-responsive">
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>PARENT ID</th>
+                            <th>TYPE</th>
+                            <th>STOP / LIMIT</th>
+                            <th>BTC</th>
+                            <th>QUANTITY</th>
+                            <th>DATE</th>
+                            <th>ACTIONS</th>
+                        </tr>
+                        </thead>
+                        <tbody id="table-body">
+                        {% for insertedRule in data['insertedRules'] %}
+                            <tr class="list-item-block">
+                                <th scope="row">{{ insertedRule.id }}</th>
+                                <th scope="row">{{ (insertedRule.parentRule.id is defined) ? insertedRule.parentRule.id : '' }}</th>
+                                <td>{{ insertedRule.type }}</td>
+                                <td>{{ insertedRule.stop ~ " / " ~ insertedRule.ruleLimit }}</td>
+                                <td>{{ insertedRule.btcPrice }}</td>
+                                <td>{{ insertedRule.quantity }}</td>
+                                <td>{{ insertedRule.createdAt | date('d.m.Y H:i:s') }}</td>
+                                <td>
+                                    {% if insertedRule.haveParentOrChildRule == false %}
+                                        <a data-toggle="confirmation"
+                                           href="{{ path('binance-api-get-rule', {id: insertedRule.id}) }}"
+                                           class="btn fancybox default edit btn-xs green {{ insertedRule.id }}"
+                                           title="Edit"><i class="material-icons">edit</i></a>
+                                    {% endif %}
+                                    <a data-toggle="confirmation"
+                                       href="{{ path('binance-api-remove-rule-wtih-children', {id: insertedRule.id}) }}"
+                                       data-type="confirm"
+                                       class="btn fancybox default delete btn-xs green"
+                                       id="{{ insertedRule.id }}"
+                                       title="Delete"><i class="material-icons">delete</i></a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
 {% endblock %}
 
 
@@ -172,15 +250,21 @@
                 }
             };
 
+            var symbolQuantity = "{{ data['symbolQuantity'] }}";
+            symbolQuantity = (symbolQuantity < 1) ? parseFloat(symbolQuantity) : parseInt(symbolQuantity);
+            var gainBtc = symbolQuantity * parseFloat($('.live-price').text());
+            $('#sell-btc-price').text(gainBtc.toFixed(8));
+
             //$(".live-price").click(function () {
             //    $("#buy-rule-limit").val($(this).text());
             //});
 
             $('#buy-save').click(function (e) {
                 e.preventDefault();
-                var btcPrice = $('#btc-price').text();
-                var userBtcPrice = "{{ data['btcPrice'] }}";
-                if (btcPrice < 0.00010000 || btcPrice > userBtcPrice) {
+                var btcPrice = parseFloat($('#buy-btc-price').text()).toFixed(8);
+                var userBtcPrice = parseFloat("{{ data['btcPrice'] }}");
+                var parentRuleType = $('#buy-select option:selected').data('rule-type');
+                if (btcPrice < 0.00010000 || (parentRuleType !== 'SELL' && btcPrice > userBtcPrice)) {
                     iziToast.error({
                         title: 'ERROR',
                         message: "Balance is not enough!"
@@ -226,6 +310,37 @@
                             var option = "<option value=" + data.rule.id + ">" + optionText + "</option>";
                             $('.rule-select').append(option).trigger("change");
 
+                            var tableBody = $('#table-body');
+                            var trBody = "<tr class='list-item-block'>" +
+                                "<th scope='row'>" + data.rule.id + "</th>" +
+                                "<th scope='row'>";
+                            trBody += (data.rule.parentRule) ? data.rule.parentRule.id : '';
+                            trBody += "</th>" +
+                                "<td>" + data.rule.type + "</td>" +
+                                "<td>" + data.rule.stop + " / " + data.rule.ruleLimit + "</td>" +
+                                "<td>" + data.rule.btcPrice + "</td>" +
+                                "<td>" + data.rule.quantity + "</td>" +
+                                "<td>" + data.rule.createdAt + "</td>";
+                            trBody += "<td>";
+                            if (!data.rule.haveParentOrChildRule) {
+                                trBody += "<a data-toggle='confirmation' " +
+                                    "href='/binance-api/rule/" + data.rule.id + "'" +
+                                    " class='btn fancybox default edit btn-xs green' " +
+                                    "title='Edit'><i class='material-icons'>edit</i></a>"
+                            } else {
+                                if (data.rule.parentRule) {
+                                    $('.' + data.rule.parentRule.id).remove();
+                                }
+                            }
+                            trBody += "<a data-toggle='confirmation'" +
+                                " href='/binance-api/removeRuleWithChildren/" + data.rule.id + "'" +
+                                " data-type='confirm'" +
+                                " class='btn fancybox default delete btn-xs green'" +
+                                " id='" + data.rule.id + "'" +
+                                " title='Delete'><i class='material-icons'>delete</i></a>"
+                            trBody += "</td>";
+                            tableBody.append(trBody);
+
                             iziToast.success({
                                 title: 'SUCCESS',
                                 message: data.message
@@ -246,7 +361,7 @@
                 var sellQuantity = $('#sell-quantity').val();
                 var selectedvalue = $("#sell-select").val();
                 if (!selectedvalue) {
-                    var validQuantity = parseFloat("{{ data['symbolQuantity'] }}").toFixed(8);
+                    var validQuantity = parseFloat("{{ data['symbolQuantity'] }}");
                     if (sellQuantity > validQuantity) {
                         iziToast.error({
                             title: 'ERROR',
@@ -302,6 +417,37 @@
                             var option = "<option value=" + data.rule.id + ">" + optionText + "</option>";
                             $('.rule-select').append(option).trigger("change");
 
+                            var tableBody = $('#table-body');
+                            var trBody = "<tr class='list-item-block'>" +
+                                "<th scope='row'>" + data.rule.id + "</th>" +
+                                "<th scope='row'>";
+                            trBody += (data.rule.parentRule) ? data.rule.parentRule.id : '';
+                            trBody += "</th>" +
+                                "<td>" + data.rule.type + "</td>" +
+                                "<td>" + data.rule.stop + " / " + data.rule.ruleLimit + "</td>" +
+                                "<td>" + data.rule.btcPrice + "</td>" +
+                                "<td>" + data.rule.quantity + "</td>" +
+                                "<td>" + data.rule.createdAt + "</td>";
+                            trBody += "<td>";
+                            if (!data.rule.haveParentOrChildRule) {
+                                trBody += "<a data-toggle='confirmation' " +
+                                    "href='/binance-api/rule/" + data.rule.id + "'" +
+                                    " class='btn fancybox default edit btn-xs green' " +
+                                    "title='Edit'><i class='material-icons'>edit</i></a>"
+                            } else {
+                                if (data.rule.parentRule) {
+                                    $('.' + data.rule.parentRule.id).remove();
+                                }
+                            }
+                            trBody += "<a data-toggle='confirmation'" +
+                                " href='/binance-api/removeRuleWithChildren/" + data.rule.id + "'" +
+                                " data-type='confirm'" +
+                                " class='btn fancybox default delete btn-xs green'" +
+                                " id='" + data.rule.id + "'" +
+                                " title='Delete'><i class='material-icons'>delete</i></a>"
+                            trBody += "</td>";
+                            tableBody.append(trBody);
+
                             iziToast.success({
                                 title: 'SUCCESS',
                                 message: data.message
@@ -328,7 +474,7 @@
                     var quantity = $('#buy-quantity').val();
                     if (quantity !== '' && buyLimit !== '') {
                         var result = quantity * buyLimit;
-                        $('#btc-price').text(result.toFixed(8));
+                        $('#buy-btc-price').text(result.toFixed(8));
                     }
                 }
             });
@@ -390,14 +536,28 @@
 
             $('.buy-percent').click(function () {
                 var percent = parseInt($(this).data('percent'));
-                var pipeRuleQuantity = $('#buy-select option:selected').data('rule-quantity');
-                var pipeRuleType = $('#buy-select option:selected').data('rule-type');
-                var userBtcPrice = ("{{ data['btcPrice'] }}" * percent) / 100;
+                var parentRuleQuantity = $('#buy-select option:selected').data('rule-quantity');
+                var parentRuleType = $('#buy-select option:selected').data('rule-type');
+                var gainBtcPrice = $('#buy-select option:selected').data('rule-gain-btc');
+                var ruleBtcPrice = $('#buy-select option:selected').data('rule-btc');
+                var userBtcPrice = "{{ data['btcPrice'] }}";
+                gainBtcPrice = (gainBtcPrice < 1) ? parseFloat(gainBtcPrice) : parseInt(gainBtcPrice);
+                ruleBtcPrice = (ruleBtcPrice < 1) ? parseFloat(ruleBtcPrice) : parseInt(ruleBtcPrice);
+                userBtcPrice = (userBtcPrice < 1) ? parseFloat(userBtcPrice) : parseInt(userBtcPrice);
+                if (parentRuleQuantity > -1) {
+                    if (parentRuleType === 'BUY') {
+                        userBtcPrice = userBtcPrice - ruleBtcPrice;
+                    } else if (parentRuleType === 'SELL') {
+                        userBtcPrice = userBtcPrice + gainBtcPrice;
+                    }
+                    userBtcPrice = (userBtcPrice <= -1) ? 0 : userBtcPrice;
+                }
+                userBtcPrice = (userBtcPrice * percent) / 100;
                 $('#buy-btc-price').text(userBtcPrice.toFixed(8));
                 var buyLimit = $('#buy-rule-limit');
                 var validQuantity = userBtcPrice / buyLimit.val();
                 if (parseInt(validQuantity) < 1) {
-                    validQuantity = validQuantity.toFixed(8);
+                    validQuantity = parseFloat(validQuantity.toFixed(8));
                 } else {
                     validQuantity = parseInt(validQuantity);
                 }
@@ -405,15 +565,17 @@
             });
 
             $('.sell-percent').click(function () {
-                var pipeRuleQuantity = $("#sell-select option:selected").data('rule-quantity');
-                var pipeRuleType = $("#sell-select option:selected").data('rule-type');
+                var parentRuleQuantity = $("#sell-select option:selected").data('rule-quantity');
+                var parentRuleType = $("#sell-select option:selected").data('rule-type');
                 var symbolQuantity = ("{{ data['symbolQuantity'] }}" < 1) ? parseFloat("{{ data['symbolQuantity'] }}") : parseInt("{{ data['symbolQuantity'] }}");
-                if (pipeRuleQuantity > -1) {
-                    pipeRuleQuantity = (pipeRuleQuantity < 1) ? parseFloat(pipeRuleQuantity) : parseInt(pipeRuleQuantity);
-                    if (pipeRuleType === 'BUY') {
-                        symbolQuantity = pipeRuleQuantity + symbolQuantity;
-                    } else if (pipeRuleType === 'SELL') {
-                        symbolQuantity = symbolQuantity - pipeRuleQuantity;
+                var gainQuantity = $('#sell-select option:selected').data('rule-gain-quantity');
+                gainQuantity = (gainQuantity < 1) ? parseFloat(gainQuantity) : parseInt(gainQuantity);
+                if (parentRuleQuantity > -1) {
+                    parentRuleQuantity = (parentRuleQuantity < 1) ? parseFloat(parentRuleQuantity) : parseInt(parentRuleQuantity);
+                    if (parentRuleType === 'BUY') {
+                        symbolQuantity = gainQuantity + symbolQuantity;
+                    } else if (parentRuleType === 'SELL') {
+                        symbolQuantity = symbolQuantity - parentRuleQuantity;
                         symbolQuantity = (symbolQuantity <= -1) ? 0 : symbolQuantity;
                     }
                 }
@@ -427,13 +589,45 @@
                 var gainBtcPrice = validQuantity * $("#sell-rule-limit").val();
                 $('#sell-quantity').val(validQuantity);
                 $('#symbol-price').text(validQuantity);
-                $('#sell-btc-price').text(gainBtcPrice);
+                $('#sell-btc-price').text(gainBtcPrice.toFixed(8));
+            });
+
+            $('#buy-edit-cancel-button').on('mouseover', function () {
+                $('#buy-edit-cancel-icon').text('cancel');
+            });
+            $('#buy-edit-cancel-button').on('mouseout', function () {
+                $('#buy-edit-cancel-icon').text('edit');
+            });
+            $('#sell-edit-cancel-button').on('mouseover', function () {
+                $('#sell-edit-cancel-icon').text('cancel');
+            });
+            $('#sell-edit-cancel-button').on('mouseout', function () {
+                $('#sell-edit-cancel-icon').text('edit');
+            });
+
+            $('#buy-edit-cancel-button').on('click', function () {
+                $(this).hide();
+                $('#buy-rule-stop').val('');
+                $('#buy-rule-limit').val($('.live-price:first').text());
+                $('#buy-quantity').val('');
+                $('#buy-btc-price').text("{{ data['btcPrice'] }}");
+                $('#buy-select').val('');
+            });
+
+            $('#sell-edit-cancel-button').on('click', function () {
+                $(this).hide();
+                $('#sell-rule-stop').val('');
+                $('#sell-rule-limit').val($('.live-price:first').text());
+                $('#sell-quantity').val('');
+                $('#sell-btc-price').text(0.00000000);
+                $('#sell-select').val('');
             });
 
 
             $('#buy-select').on('change', function () {
                 var ruleUrl = $("#buy-select option:selected").data('href');
                 var userBtcPrice = "{{ data['btcPrice'] }}";
+                userBtcPrice = parseFloat(userBtcPrice);
                 if (ruleUrl) {
                     $.ajax
                     ({
@@ -441,18 +635,21 @@
                         url: ruleUrl,
                         success: function (data) {
                             if (!data.error) {
-                                var quantity = "{{ data['quantity'] }}";
                                 data.rule.quantity = (data.rule.quantity < 1) ? parseFloat(data.rule.quantity) : parseInt(data.rule.quantity);
-                                quantity = (quantity < 1) ? parseFloat(quantity) : parseInt(quantity);
+                                data.rule.btcPrice = parseFloat(data.rule.btcPrice);
+                                var quantity = 0;
+                                var btc = 0;
                                 if (data.rule.type === 'BUY') {
-                                    var remainingQuantity = quantity - data.rule.quantity;
-                                    remainingQuantity = (remainingQuantity > -1 && remainingQuantity < 1) ? parseFloat(remainingQuantity).toFixed(8) : parseInt(remainingQuantity);
-                                    remainingQuantity = (remainingQuantity <= -1) ? 0 : remainingQuantity;
-                                    $('#buy-quantity').val(remainingQuantity)
-                                    var remainingBtc = remainingQuantity * $('#buy-rule-limit').val();
-                                    $('#buy-btc-price').text(remainingBtc.toFixed(8));
+                                    btc = userBtcPrice - data.rule.btcPrice;
+                                    quantity = btc / $('#buy-rule-limit').val();
+                                } else if (data.rule.type === 'SELL') {
+                                    var gainBtcPrice = data.rule.gainBtcPrice;
+                                    btc = userBtcPrice + parseFloat(gainBtcPrice);
+                                    quantity = btc / $('#buy-rule-limit').val();
                                 }
-
+                                quantity = (quantity > -1 && quantity < 1) ? parseFloat(quantity.toFixed(8)) : parseInt(quantity);
+                                $('#buy-btc-price').text(btc.toFixed(8));
+                                $('#buy-quantity').val(quantity);
                             } else {
                                 iziToast.error({
                                     title: 'ERROR',
@@ -465,7 +662,7 @@
                     var buyLimit = $("#buy-rule-limit").val();
                     var validQuantity = userBtcPrice / buyLimit;
                     if (parseInt(validQuantity) < 1) {
-                        validQuantity = validQuantity.toFixed(8);
+                        validQuantity = parseFloat(validQuantity.toFixed(8));
                     } else {
                         validQuantity = parseInt(validQuantity);
                     }
@@ -487,11 +684,14 @@
                                 var userSymbolQuantity = "{{ data['symbolQuantity'] }}";
                                 data.rule.quantity = (data.rule.quantity < 1) ? parseFloat(data.rule.quantity) : parseInt(data.rule.quantity);
                                 userSymbolQuantity = (userSymbolQuantity < 1) ? parseFloat(userSymbolQuantity) : parseInt(userSymbolQuantity);
+                                var gainBtcPrice = 0;
                                 if (data.rule.type === 'BUY') {
-                                    var totalQuantity = data.rule.quantity + userSymbolQuantity;
+                                    var gainQuantity = parseFloat(data.rule.gainQuantity);
+                                    gainQuantity = (gainQuantity < 1) ? parseFloat(gainQuantity) : parseInt(gainQuantity);
+                                    var totalQuantity = gainQuantity + userSymbolQuantity;
                                     $('#sell-quantity').val(totalQuantity);
                                     $('#symbol-price').text(totalQuantity);
-                                    var gainBtcPrice = totalQuantity * $("#sell-rule-limit").val();
+                                    gainBtcPrice = totalQuantity * $("#sell-rule-limit").val();
                                     if (parseInt(gainBtcPrice) > 1) {
                                         $('#sell-btc-price').text(gainBtcPrice);
                                     } else {
@@ -500,10 +700,10 @@
                                 } else if (data.rule.type === 'SELL') {
                                     var remainingQuantity = (userSymbolQuantity - data.rule.quantity);
                                     remainingQuantity = (remainingQuantity <= -1) ? 0 : remainingQuantity;
-                                    remainingQuantity = (remainingQuantity < 0 && remainingQuantity > -1) ? parseFloat(remainingQuantity) : parseInt(remainingQuantity);
+                                    remainingQuantity = (remainingQuantity < 0 && remainingQuantity > -1) ? parseFloat(remainingQuantity.toFixed(8)) : parseInt(remainingQuantity);
                                     $("#sell-quantity").val(remainingQuantity);
                                     $("#symbol-price").text(remainingQuantity);
-                                    var gainBtcPrice = data.rule.quantity * $("#sell-rule-limit").val();
+                                    gainBtcPrice = data.rule.quantity * $("#sell-rule-limit").val();
                                     $("#sell-btc-price").text(gainBtcPrice.toFixed(8));
                                 }
                             } else {
@@ -526,6 +726,90 @@
                     $('#symbol-price').text(validSymbolQuantity);
                 }
             });
+
+            $(document).on('click', 'a.delete', function (event) {
+                event.preventDefault();
+                var targetElem = $(this);
+                swal({
+                    title: "Are you sure?",
+                    text: "You will not be able to recover this data!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Yes, delete it!",
+                    closeOnConfirm: false
+                }, function () {
+                    var targetHref = targetElem.attr('href');
+                    $.ajax({
+                        type: "GET",
+                        url: targetHref,
+                        success: function (data) {
+                            if (!data.error) {
+                                data.ids.forEach(function (id) {
+                                    $('#' + id).closest('.list-item-block').remove();
+                                    $('.option-' + id).remove();
+                                });
+                                if (data.parentRuleId) {
+                                    var editButtonBody = "<a data-toggle='confirmation' " +
+                                        "href='/binance-api/rule/" + data.parentRuleId + "'" +
+                                        " class='btn fancybox default edit btn-xs green' " +
+                                        "title='Edit'><i class='material-icons'>edit</i></a>";
+                                    $('#' + data.parentRuleId).before(editButtonBody);
+                                }
+                                swal("Deleted!", "Your data has been deleted.", "success");
+                                iziToast.success({
+                                    title: 'SUCCESS',
+                                    message: data.message
+                                });
+                            } else {
+                                iziToast.error({
+                                    title: 'ERROR',
+                                    message: data.message
+                                });
+                            }
+                        }
+                    });
+                });
+            });
+
+            $(document).on('click', 'a.edit', function (event) {
+                event.preventDefault();
+                var targetElem = $(this);
+                var targetHref = targetElem.attr('href');
+                $.ajax({
+                    type: "GET",
+                    url: targetHref,
+                    success: function (data) {
+                        if (!data.error) {
+                            if (data.rule.type === 'BUY') {
+                                $('#buy-rule-stop').val(data.rule.stop);
+                                $('#buy-rule-limit').val(data.rule.ruleLimit);
+                                $('#buy-quantity').val(data.rule.quantity);
+                                $('#buy-btc-price').text(data.rule.btcPrice);
+                                $('#sell-edit-cancel-button').trigger('click');
+                                $('#sell-edit-cancel-button').hide();
+                                $('#buy-edit-cancel-button').show();
+                                window.scrollTo(0, 0);
+                            } else if (data.rule.type === 'SELL') {
+                                $('#sell-rule-stop').val(data.rule.stop);
+                                $('#sell-rule-limit').val(data.rule.ruleLimit);
+                                $('#sell-quantity').val(data.rule.quantity);
+                                $('#sell-btc-price').text(data.rule.btcPrice);
+                                $('#buy-edit-cancel-button').trigger('click');
+                                $('#buy-edit-cancel-button').hide();
+                                $('#sell-edit-cancel-button').show();
+                                window.scrollTo(0, 0);
+                            }
+                        } else {
+                            iziToast.error({
+                                title: 'ERROR',
+                                message: data.message
+                            });
+                        }
+                    }
+                });
+            });
+
 
             {% for label, messages in app.flashes(['success']) %}
             {% for message in messages %}

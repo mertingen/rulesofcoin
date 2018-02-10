@@ -29,7 +29,7 @@ parameters:
     redis_cache_port: 6379
     redis_cache_keyspace: rule
 
-    rule_symbol_count_limit: 4
+    rule_symbol_count_limit: 6
 
     'twitter':
       consumer_key: ~

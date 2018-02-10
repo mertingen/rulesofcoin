@@ -4,6 +4,7 @@ namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\ORM\Mapping\JoinColumn;
+use Doctrine\ORM\Mapping\OneToOne;
 use JsonSerializable;
 
 /**
@@ -87,9 +88,15 @@ class Rule implements JsonSerializable
 
     /**
      *
-     * @ORM\Column(name="parent_rule_id", type="string", nullable=true)
+     * @ORM\Column(name="gain_btc_price", type="string", nullable=true)
      */
-    private $parentRuleId;
+    private $gainBtcPrice;
+
+    /**
+     *
+     * @ORM\Column(name="gain_quantity", type="string", nullable=true)
+     */
+    private $gainQuantity;
 
     /**
      * @var
@@ -101,6 +108,15 @@ class Rule implements JsonSerializable
      * @ORM\OneToOne(targetEntity="AppBundle\Entity\Bid", mappedBy="rule")
      */
     private $bid;
+
+    /**
+     * One Student has One Student.
+     * @OneToOne(targetEntity="AppBundle\Entity\Rule")
+     * @JoinColumn(name="parent_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
+     */
+    private $parentRule;
+
+    private $haveParentOrChildRule = false;
 
 
     /**
@@ -395,31 +411,105 @@ class Rule implements JsonSerializable
             'quantity' => $this->getQuantity(),
             'stopType' => $this->getStopType(),
             'type' => $this->getType(),
-            'parentRuleId' => $this->getParentRuleId()
+            'gainBtcPrice' => $this->getGainBtcPrice(),
+            'parentRule' => $this->getParentRule(),
+            'gainQuantity' => $this->getGainQuantity(),
+            'haveParentOrChildRule' => $this->getHaveParentOrChildRule()
         );
     }
 
     /**
-     * Set parentRuleId
+     * Set gainBtcPrice
      *
-     * @param integer $parentRuleId
+     * @param string $gainBtcPrice
      *
      * @return Rule
      */
-    public function setParentRuleId($parentRuleId)
+    public function setGainBtcPrice($gainBtcPrice)
     {
-        $this->parentRuleId = $parentRuleId;
+        $this->gainBtcPrice = $gainBtcPrice;
 
         return $this;
     }
 
     /**
-     * Get parentRuleId
+     * Get gainBtcPrice
      *
-     * @return integer
+     * @return string
      */
-    public function getParentRuleId()
+    public function getGainBtcPrice()
     {
-        return $this->parentRuleId;
+        return $this->gainBtcPrice;
+    }
+
+    /**
+     * Set parentRule
+     *
+     * @param \AppBundle\Entity\Rule $parentRule
+     *
+     * @return Rule
+     */
+    public function setParentRule(\AppBundle\Entity\Rule $parentRule = null)
+    {
+        $this->parentRule = $parentRule;
+
+        return $this;
+    }
+
+    /**
+     * Get parentRule
+     *
+     * @return \AppBundle\Entity\Rule
+     */
+    public function getParentRule()
+    {
+        return $this->parentRule;
+    }
+
+    /**
+     * Set gainQuantity
+     *
+     * @param string $gainQuantity
+     *
+     * @return Rule
+     */
+    public function setGainQuantity($gainQuantity)
+    {
+        $this->gainQuantity = $gainQuantity;
+
+        return $this;
+    }
+
+    /**
+     * Get gainQuantity
+     *
+     * @return string
+     */
+    public function getGainQuantity()
+    {
+        return $this->gainQuantity;
+    }
+
+    /**
+     * Get id
+     *
+     * @return int
+     */
+    public function getHaveParentOrChildRule()
+    {
+        return $this->haveParentOrChildRule;
+    }
+
+    /**
+     * Set symbol
+     *
+     * @param bool $haveParentOrChildRule
+     * @return Rule
+     */
+    public function setHaveParentOrChildRule($haveParentOrChildRule = false)
+    {
+        $this->haveParentOrChildRule = $haveParentOrChildRule;
+
+        return $this;
     }
 }

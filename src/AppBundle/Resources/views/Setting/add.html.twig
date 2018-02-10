@@ -46,12 +46,12 @@
                                 <div class="card" style="display: none">
                                     <div class="header">
                                         <h2>
-                                            BINANCE API KEYS
+                                            Settings
                                         </h2>
                                     </div>
                                     <div class="body">
                                         <form method="post" action="{{ path('post-setting-add') }}">
-                                            <label for="api_key">Api Key</label>
+                                            <label for="api_key">Binance Api Key</label>
                                             <div class="form-group">
                                                 <div class="form-line">
                                                     <input type="text" id="binance-api-key" name="binance-api-key"
@@ -59,7 +59,7 @@
                                                            placeholder="Enter your Binance api key">
                                                 </div>
                                             </div>
-                                            <label for="secret_key">Secret Key</label>
+                                            <label for="secret_key">Binance Secret Key</label>
                                             <div class="form-group">
                                                 <div class="form-line">
                                                     <input type="text" id="binance-secret-key" name="binance-secret-key"
@@ -81,12 +81,12 @@
                 <div class="card">
                     <div class="header">
                         <h2>
-                            BINANCE API KEYS
+                            Settings
                         </h2>
                     </div>
                     <div class="body">
                         <form method="post" action="{{ path('post-setting-add') }}">
-                            <label for="api_key">Api Key</label>
+                            <label for="api_key">Binance Api Key</label>
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="{{ (app.user.binanceApiKey) ? 'password' : 'text' }}"
@@ -96,7 +96,7 @@
                                            value="{{ app.user.binanceApiKey }}">
                                 </div>
                             </div>
-                            <label for="secret_key">Secret Key</label>
+                            <label for="secret_key">Binance Secret Key</label>
                             <div class="form-group">
                                 <div class="form-line">
                                     <input type="{{ (app.user.binanceSecretKey) ? 'password' : 'text' }}"
@@ -143,7 +143,6 @@
                 e.preventDefault();
                 var that = $(this);
                 var url = that.attr('href');
-                console.log(url);
                 $.ajax
                 ({
                     type: "GET",
