@@ -550,6 +550,8 @@ class BinanceApiController extends Controller
             );
         }
 
+        $removingRule = $rule;
+
         $removedIds = array();
         $removedIds[] = $rule->getId();
         do {
@@ -568,13 +570,20 @@ class BinanceApiController extends Controller
         $responseArray = array(
             'error' => false,
             'ids' => $removedIds,
-            'message' => 'Rule is successfully removed!'
+            'message' => 'Rule is successfully removed!',
+            'parentRuleId' => null
         );
 
-        $haveParentOrChildRule = $binanceService->checkRuleParentOrChild($rule);
-        $responseArray['parentRuleId'] = (!$haveParentOrChildRule) ? null : $rule->getParentRule()->getId();
+        $haveParentOrChildRule = $binanceService->checkRuleParentOrChild($removingRule);
+        if ($haveParentOrChildRule) {
+            $parentRule = $removingRule->getParentRule();
+            if ($parentRule) {
+                $grandParent = $removingRule->getParentRule()->getParentRule();
+                $responseArray['parentRuleId'] = ($grandParent) ? null : $removingRule->getParentRule()->getId();
+            }
+        }
 
-        $binanceService->removeRule($rule);
+        $binanceService->removeRule($removingRule);
         return new JsonResponse(
             $responseArray
             , 200
