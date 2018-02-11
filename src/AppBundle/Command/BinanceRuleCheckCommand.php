@@ -94,6 +94,41 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
     }
 
     /**
+     * @param array $rule
+     * @param string $symbol
+     * @param int $quantity
+     */
+    public function sell($rule = array(), $symbol = '', $quantity = 0)
+    {
+        $userBinanceService = $this->getUserBinanceSevice();
+        $userBinanceService->connect($rule['binance_api_key'], $rule['binance_secret_key']);
+        $buyData = array(
+            'symbol' => $symbol,
+            'quantity' => $quantity,
+            'limit' => $rule['buyLimit']
+        );
+        $result = $userBinanceService->sell($buyData);
+        //$btcAvailable = $userBinanceApi->balances()['BTC']['available'];
+        //$quantity = intval($rule['btcPrice'] / $trades['price']);
+        if (is_array($result)) {
+            if (array_key_exists('code', $result) && is_numeric($result['code'])) {
+                echo '[ERROR] -> ' . $result['msg'] . PHP_EOL;
+            } else {
+                $order = array(
+                    'ruleId' => $rule['ruleId'],
+                    'orderId' => $result['orderId'],
+                    'clientOrderId' => $result['clientOrderId'],
+                    'createdAt' => new \DateTime(),
+                    'executedQuantity' => $result['executedQty'],
+                    'binanceApiKey' => $rule['binance_api_key'],
+                    'binanceSecretKey' => $rule['binance_secret_key']
+                );
+                $this->getMqProducer()->publish(serialize($order));
+            }
+        }
+    }
+
+    /**
      * @return \AppBundle\Service\RedisService|mixed|object
      */
     public function getRedisService()

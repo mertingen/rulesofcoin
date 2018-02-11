@@ -146,7 +146,8 @@ class BinanceService
                 'binance_secret_key' => $user->getBinanceSecretKey(),
                 'btcPrice' => $rule->getBtcPrice(),
                 'quantity' => $rule->getQuantity(),
-                'stopType' => $rule->getStopType()
+                'stopType' => $rule->getStopType(),
+                'type' => $rule->getType()
             );
         }
         $this->redisService->insert('rules', $data);

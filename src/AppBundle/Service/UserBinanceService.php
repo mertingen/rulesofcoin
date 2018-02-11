@@ -72,6 +72,11 @@ class UserBinanceService
         return $this->api->buy($data['symbol'], $data['quantity'], $data['limit']);
     }
 
+    public function sell($data = array())
+    {
+        return $this->api->sell($data['symbol'], $data['quantity'], $data['limit']);
+    }
+
     /**
      * @param array $data
      * @return mixed
