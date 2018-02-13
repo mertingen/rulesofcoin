@@ -105,7 +105,7 @@
                           data-post-type="ADD">
 
                         <label class="form-group">{{ data['symbol'] }} (Qty): <span
-                                    id="symbol-price">{{ data['symbolPrice'] }}</span>
+                                    id="symbol-available">{{ data['symbolAvailable'] }}</span>
                             <a class="sell-percent" data-percent="100">[%100]</a>
                             <a class="sell-percent" data-percent="75">[%75]</a>
                             <a class="sell-percent" data-percent="50">[%50]</a>
@@ -627,7 +627,7 @@
                 }
                 var gainBtcPrice = validQuantity * $("#sell-rule-limit").val();
                 $('#sell-quantity').val(validQuantity);
-                $('#symbol-price').text(validQuantity);
+                $('#symbol-available').text(validQuantity);
                 $('#sell-btc-price').text(gainBtcPrice.toFixed(8));
             });
 
@@ -735,7 +735,7 @@
                                         gainQuantity = (gainQuantity < 1) ? parseFloat(gainQuantity) : parseInt(gainQuantity);
                                         var totalQuantity = gainQuantity + userSymbolQuantity;
                                         $('#sell-quantity').val(totalQuantity);
-                                        $('#symbol-price').text(totalQuantity);
+                                        $('#symbol-available').text(totalQuantity);
                                         gainBtcPrice = totalQuantity * $("#sell-rule-limit").val();
                                         if (parseInt(gainBtcPrice) > 1) {
                                             $('#sell-btc-price').text(gainBtcPrice);
@@ -747,7 +747,7 @@
                                         remainingQuantity = (remainingQuantity <= -1) ? 0 : remainingQuantity;
                                         remainingQuantity = (remainingQuantity < 0 && remainingQuantity > -1) ? parseFloat(remainingQuantity.toFixed(8)) : parseInt(remainingQuantity);
                                         $("#sell-quantity").val(remainingQuantity);
-                                        $("#symbol-price").text(remainingQuantity);
+                                        $("#symbol-available").text(remainingQuantity);
                                         gainBtcPrice = data.rule.quantity * $("#sell-rule-limit").val();
                                         $("#sell-btc-price").text(gainBtcPrice.toFixed(8));
                                     }
@@ -769,7 +769,7 @@
                     } else {
                         $("#sell-btc-price").text(gainBtcPrice);
                     }
-                    $('#symbol-price').text(validSymbolQuantity);
+                    $('#symbol-available').text(validSymbolQuantity);
                 }
             });
 
@@ -862,6 +862,15 @@
                         }
                     }
                 });
+            });
+
+            $('form').on('focus', 'input[type=number]', function (e) {
+                $(this).on('mousewheel.disableScroll', function (e) {
+                    e.preventDefault();
+                });
+            });
+            $('form').on('blur', 'input[type=number]', function (e) {
+                $(this).off('mousewheel.disableScroll');
             });
 
 

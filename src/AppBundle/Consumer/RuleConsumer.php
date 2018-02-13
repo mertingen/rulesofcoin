@@ -16,6 +16,7 @@ use AppBundle\Service\TwitterService;
 use Doctrine\ORM\EntityManagerInterface;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqpLib\Message\AMQPMessage;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class RuleConsumer implements ConsumerInterface
 {
@@ -31,9 +32,9 @@ class RuleConsumer implements ConsumerInterface
      * @param BinanceService $binanceService
      * @param TwitterService $twitterService
      * @param EntityManagerInterface $entityManager
-     * @param \Symfony\Component\DependencyInjection\ContainerInterface $container
+     * @param ContainerInterface $container
      */
-    public function __construct(BinanceService $binanceService, TwitterService $twitterService, EntityManagerInterface $entityManager, \Symfony\Component\DependencyInjection\ContainerInterface $container)
+    public function __construct(BinanceService $binanceService, TwitterService $twitterService, EntityManagerInterface $entityManager, ContainerInterface $container)
     {
         $this->container = $container;
         $this->binanceService = $binanceService;
@@ -65,7 +66,9 @@ class RuleConsumer implements ConsumerInterface
                     'user' => $rule->getUser()
                 );
 
-                $this->checkUserRules($keys);
+                $this->checkUserSymbolBalanceRules($keys, $rule);
+                $this->checkParentRule($rule, $keys);
+
                 $userTwitterScreenName = $rule->getUser()->getTwitterScreenName();
                 if ($userTwitterScreenName) {
                     $twitterMessageData = array(
@@ -90,23 +93,57 @@ class RuleConsumer implements ConsumerInterface
 
     /**
      * @param array $data
+     * @param Rule $rule
      */
-    public function checkUserRules($data = array())
+    public function checkUserSymbolBalanceRules($data = array(), Rule $rule)
     {
         $this->userBinanceService->connect($data['binanceApiKey'], $data['binanceSecretKey']);
-        $userBtc = $this->userBinanceService->getUserBtcPrice();
-        $userRules = $this->binanceService->getRules(array('user' => $data['user'], 'isDone' => false));
         $allRules = $this->redisService->get('rules');
-        /**
-         * @var Rule $userRule
-         */
-        foreach ($userRules as $userRule) {
-            if ($userRule->getBtcPrice() > $userBtc) {
-                $this->entityManager->remove($userRule);
-                $this->entityManager->flush();
-                unset($allRules[$userRule->getSymbol()][$userRule->getId()]);
-                $this->redisService->insert('rules', $allRules);
+        if ($rule->getType() == 'BUY') {
+            $userBtc = $this->userBinanceService->getUserBtcPrice();
+            $userRules = $this->binanceService->getRules(array('user' => $data['user'], 'isDone' => false, 'parentRule' => null));
+            /**
+             * @var Rule $userRule
+             */
+            foreach ($userRules as $userRule) {
+                if ($userRule->getBtcPrice() > $userBtc) {
+                    $this->entityManager->remove($userRule);
+                    $this->entityManager->flush();
+                    unset($allRules[$userRule->getSymbol()][$userRule->getId()]);
+                    $this->redisService->insert('rules', $allRules);
+                }
             }
+        } elseif ($rule->getType() == 'SELL') {
+            $symbolAvailable = $this->userBinanceService->getUserSymbolPrice($rule->getSymbol());
+            if (floatval($rule->getQuantity()) > floatval($symbolAvailable) && !$rule->getParentRule()) {
+                $this->entityManager->remove($rule);
+                $this->entityManager->flush();
+                unset($allRules[$rule->getSymbol()][$rule->getId()]);
+            }
+        }
+    }
+
+    /**
+     * @param Rule $rule
+     * @param array $keys
+     */
+    public function checkParentRule(Rule $rule, $keys = array())
+    {
+        if ($rule->getParentRule()) {
+            $rules = $this->redisService->get('rules');
+            $parentRule = $rule->getParentRule();
+            $rules[$parentRule->getSymbol()][$parentRule->getId()] = array(
+                'ruleId' => $parentRule->getId(),
+                'ruleLimit' => $parentRule->getRuleLimit(),
+                'stop' => $parentRule->getStop(),
+                'binance_api_key' => $keys['binanceApiKey'],
+                'binance_secret_key' => $keys['binanceSecretKey'],
+                'btcPrice' => $parentRule->getBtcPrice(),
+                'quantity' => $parentRule->getQuantity(),
+                'stopType' => $parentRule->getStopType(),
+                'type' => $parentRule->getType()
+            );
+            $this->redisService->insert('rules', $rules);
         }
     }
 

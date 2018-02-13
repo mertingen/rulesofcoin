@@ -20,7 +20,6 @@ use PhpAmqpLib\Message\AMQPMessage;
 class OrderConsumer implements ConsumerInterface
 {
     private $entityManager;
-    private $binanceService;
     private $userBinanceService;
     private $twitterService;
     private $container;
