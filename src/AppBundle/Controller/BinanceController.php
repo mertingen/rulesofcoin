@@ -83,16 +83,16 @@ class BinanceController extends Controller
 
         $data['btcPrice'] = $userBinanceService->getUserBtcPrice();
         //$data['btcPrice'] = 0.08573670;
-        //$data['symbolPrice'] = $userBinanceService->getUserSymbolPrice($symbol);
+        //$data['symbolAvailable'] = $userBinanceService->getUserSymbolPrice($symbol);
         //$data['symbolQuantity'] = $data['symbolPrice'];
-        $data['symbolPrice'] = 1618.87654321;
+        $data['symbolAvailable'] = 1618.87654321;
         $data['symbolQuantity'] = 1618;
         if (intval($data['symbolQuantity']) < 1) {
             $data['symbolQuantity'] = $binanceService->getBtcNumberFormat($data['symbolQuantity']);
         } else {
             $data['symbolQuantity'] = intval($data['symbolQuantity']);
         }
-        $data['insertedRules'] = $binanceService->getRules(array('user' => $this->getUser(), 'symbol' => $symbol));
+        $data['insertedRules'] = $binanceService->getRules(array('user' => $this->getUser(), 'symbol' => $symbol, 'isDone' => 0));
 
         return $this->render('@App/Binance/Rule/add-rule.html.twig',
             array(

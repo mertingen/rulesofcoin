@@ -69,7 +69,7 @@ class Rule implements JsonSerializable
     /**
      * @var string
      *
-     * @ORM\Column(name="quantity", type="integer", length=255)
+     * @ORM\Column(name="quantity", type="float", length=255)
      */
     private $quantity;
 
@@ -105,13 +105,13 @@ class Rule implements JsonSerializable
     private $user;
 
     /**
-     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Bid", mappedBy="rule")
+     * @ORM\OneToOne(targetEntity="AppBundle\Entity\Bid", mappedBy="rule", cascade={"persist"})
      */
     private $bid;
 
     /**
      * One Student has One Student.
-     * @OneToOne(targetEntity="AppBundle\Entity\Rule")
+     * @OneToOne(targetEntity="AppBundle\Entity\Rule", cascade={"persist"})
      * @JoinColumn(name="parent_id", referencedColumnName="id", nullable=true, onDelete="CASCADE")
      */
     private $parentRule;

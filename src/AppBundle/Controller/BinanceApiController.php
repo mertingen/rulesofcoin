@@ -106,6 +106,7 @@ class BinanceApiController extends Controller
             );
         }
 
+        $quantity = $binanceService->getBtcNumberFormat($quantity);
         $btcPrice = $binanceService->getBtcNumberFormat(floatval($btcPrice));
         $ruleLimit = $binanceService->getBtcNumberFormat(floatval($ruleLimit));
         if (isset($stop) && $stop > 0) {
@@ -218,7 +219,9 @@ class BinanceApiController extends Controller
 
         $rule = $binanceService->upsertRule($rule);
 
-        $binanceService->setRulesToRedis($user);
+        if (!$parentRule) {
+            $binanceService->setRulesToRedis($user);
+        }
 
         return new JsonResponse(
             array(
@@ -321,6 +324,7 @@ class BinanceApiController extends Controller
             );
         }
 
+        $quantity = $binanceService->getBtcNumberFormat($quantity);
         $btcPrice = $binanceService->getBtcNumberFormat(floatval($btcPrice));
         $ruleLimit = $binanceService->getBtcNumberFormat(floatval($ruleLimit));
         if (isset($stop) && $stop > 0) {
@@ -427,7 +431,9 @@ class BinanceApiController extends Controller
 
         $rule = $binanceService->upsertRule($rule);
 
-        $binanceService->setRulesToRedis($user);
+        if (!$parentRule) {
+            $binanceService->setRulesToRedis($user);
+        }
 
         return new JsonResponse(
             array(
