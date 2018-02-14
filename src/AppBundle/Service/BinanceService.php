@@ -147,7 +147,8 @@ class BinanceService
                 'btcPrice' => $rule->getBtcPrice(),
                 'quantity' => $rule->getQuantity(),
                 'stopType' => $rule->getStopType(),
-                'type' => $rule->getType()
+                'type' => $rule->getType(),
+                'parentRule' => $rule->getParentRule()
             );
         }
         $this->redisService->insert('rules', $data);
