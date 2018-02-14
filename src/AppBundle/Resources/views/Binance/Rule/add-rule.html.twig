@@ -687,8 +687,9 @@
                                     btc = userBtcPrice - data.rule.btcPrice;
                                     quantity = btc / $('#buy-rule-limit').val();
                                 } else if (data.rule.type === 'SELL') {
-                                    var gainBtcPrice = data.rule.gainBtcPrice;
-                                    btc = userBtcPrice + parseFloat(gainBtcPrice);
+                                    //var gainBtcPrice = data.rule.btcPrice;
+                                    //btc = userBtcPrice + parseFloat(gainBtcPrice);
+                                    btc = parseFloat(data.rule.btcPrice);
                                     quantity = btc / $('#buy-rule-limit').val();
                                 }
                                 quantity = (quantity > -1 && quantity < 1) ? parseFloat(quantity.toFixed(8)) : parseInt(quantity);
@@ -732,8 +733,9 @@
                                 if (data.rule) {
                                     if (data.rule.type === 'BUY') {
                                         var gainQuantity = parseFloat(data.rule.gainQuantity);
+                                        var ruleQuantity = parseFloat(data.rule.quantity);
                                         gainQuantity = (gainQuantity < 1) ? parseFloat(gainQuantity) : parseInt(gainQuantity);
-                                        var totalQuantity = gainQuantity + userSymbolQuantity;
+                                        var totalQuantity = ruleQuantity + userSymbolQuantity;
                                         $('#sell-quantity').val(totalQuantity);
                                         $('#symbol-available').text(totalQuantity);
                                         gainBtcPrice = totalQuantity * $("#sell-rule-limit").val();
