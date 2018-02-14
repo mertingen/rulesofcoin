@@ -40,7 +40,8 @@ class BinanceOrderCheckCommand extends ContainerAwareCommand
                     'symbol' => $order->getRule()->getSymbol(),
                     'orderId' => $order->getOrderId(),
                     'bidId' => $order->getId(),
-                    'buyLimit' => $order->getRule()->getBuyLimit()
+                    'ruleLimit' => $order->getRule()->getRuleLimit(),
+                    'type' => $order->getRule()->getType()
                 );
                 $this->getContainer()->get('old_sound_rabbit_mq.order_producer')->publish(serialize($data));
             }

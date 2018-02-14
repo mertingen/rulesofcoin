@@ -69,7 +69,7 @@ class OrderConsumer implements ConsumerInterface
                             'symbol' => $data['symbol'],
                             'status' => $bid->getStatus(),
                             'quantity' => $bid->getExecutedQuantity(),
-                            'buyLimit' => $data['buyLimit']
+                            'ruleLimit' => $data['ruleLimit']
                         );
                         $this->sendTwitterNotification($twitterMessageData);
                     }
@@ -86,7 +86,7 @@ class OrderConsumer implements ConsumerInterface
      */
     public function sendTwitterNotification($data = array())
     {
-        $message = "A order is done! [STATUS:" . $data['status'] . "] - [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
+        $message = "[" . $data['type'] . "] A order is done! [STATUS:" . $data['status'] . "] - [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['ruleLimit'] . "]";
         $this->twitterService->connect(
             $this->container->getParameter('twitter')
         );
