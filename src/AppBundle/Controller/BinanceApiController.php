@@ -218,6 +218,8 @@ class BinanceApiController extends Controller
         $rule->setGainQuantity($gainQuantity);
 
         $rule = $binanceService->upsertRule($rule);
+        $haveParentOrChildRule = $binanceService->checkRuleParentOrChild($rule);
+        $rule->setHaveParentOrChildRule($haveParentOrChildRule);
 
         if (!$parentRule) {
             $binanceService->setRulesToRedis($user);
@@ -430,6 +432,8 @@ class BinanceApiController extends Controller
         $rule->setGainQuantity($gainQuantity);
 
         $rule = $binanceService->upsertRule($rule);
+        $haveParentOrChildRule = $binanceService->checkRuleParentOrChild($rule);
+        $rule->setHaveParentOrChildRule($haveParentOrChildRule);
 
         if (!$parentRule) {
             $binanceService->setRulesToRedis($user);
