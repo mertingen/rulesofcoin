@@ -75,7 +75,7 @@ class RuleConsumer implements ConsumerInterface
                         'screenName' => $userTwitterScreenName,
                         'symbol' => $rule->getSymbol(),
                         'quantity' => $newBid->getExecutedQuantity(),
-                        'buyLimit' => $rule->getBuyLimit()
+                        'ruleLimit' => $rule->getRuleLimit()
                     );
                     $this->sendTwitterNotification($twitterMessageData);
                 }
@@ -152,7 +152,7 @@ class RuleConsumer implements ConsumerInterface
      */
     public function sendTwitterNotification($data = array())
     {
-        $message = "A rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['buyLimit'] . "]";
+        $message = "A rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['ruleLimit'] . "]";
         $this->twitterService->connect(
             $this->container->getParameter('twitter')
         );
