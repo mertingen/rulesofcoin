@@ -85,8 +85,8 @@ class BinanceController extends Controller
         //$data['btcPrice'] = 0.08573670;
         $data['symbolAvailable'] = $userBinanceService->getUserSymbolPrice($symbol);
         $data['symbolQuantity'] = $data['symbolAvailable'];
-        $data['symbolAvailable'] = 100.87654321;
-        $data['symbolQuantity'] = 100;
+        //$data['symbolAvailable'] = 1618.87654321;
+        //$data['symbolQuantity'] = 1618;
         if (intval($data['symbolQuantity']) < 1) {
             $data['symbolQuantity'] = $binanceService->getBtcNumberFormat($data['symbolQuantity']);
         } else {
