@@ -255,7 +255,7 @@
 
             var symbolQuantity = "{{ data['symbolQuantity'] }}";
             symbolQuantity = (symbolQuantity < 1) ? parseFloat(symbolQuantity) : parseInt(symbolQuantity);
-            var gainBtc = symbolQuantity * parseFloat($('.live-price').text());
+            var gainBtc = symbolQuantity * parseFloat($('.live-price:first').text());
             $('#sell-btc-price').text(gainBtc.toFixed(8));
 
             //$(".live-price").click(function () {
@@ -288,11 +288,11 @@
                         });
                         return false;
                     }
-                    if ($('#buy-rule-stop').val() > $('.live-price').text()) {
+                    if ($('#buy-rule-stop').val() > $('.live-price:first').text()) {
                         var buyStopTypeInput = $("<input>")
                             .attr("type", "hidden")
                             .attr("name", "stop-type").val("greater");
-                    } else if ($('#buy-rule-stop').val() < $('.live-price').text()) {
+                    } else if ($('#buy-rule-stop').val() < $('.live-price:first').text()) {
                         var buyStopTypeInput = $("<input>")
                             .attr("type", "hidden")
                             .attr("name", "stop-type").val("smaller");
@@ -410,11 +410,11 @@
                         });
                         return false;
                     }
-                    if ($('#sell-rule-stop').val() > $('.live-price').text()) {
+                    if ($('#sell-rule-stop').val() > $('.live-price:first').text()) {
                         var sellStopTypeInput = $("<input>")
                             .attr("type", "hidden")
                             .attr("name", "stop-type").val("greater");
-                    } else if ($('#buy-rule-stop').val() < $('.live-price').text()) {
+                    } else if ($('#buy-rule-stop').val() < $('.live-price:first').text()) {
                         var sellStopTypeInput = $("<input>")
                             .attr("type", "hidden")
                             .attr("name", "stop-type").val("smaller");
@@ -612,7 +612,7 @@
                 if (parentRuleQuantity > -1) {
                     parentRuleQuantity = (parentRuleQuantity < 1) ? parseFloat(parentRuleQuantity) : parseInt(parentRuleQuantity);
                     if (parentRuleType === 'BUY') {
-                        symbolQuantity = gainQuantity + symbolQuantity;
+                        symbolQuantity = parentRuleQuantity + symbolQuantity;
                     } else if (parentRuleType === 'SELL') {
                         symbolQuantity = symbolQuantity - parentRuleQuantity;
                         symbolQuantity = (symbolQuantity <= -1) ? 0 : symbolQuantity;

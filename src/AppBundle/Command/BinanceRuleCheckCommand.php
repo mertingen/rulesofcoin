@@ -43,13 +43,6 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                                     } elseif ($symbolRule['type'] == 'SELL') {
                                         $this->sell($symbolRule, $symbol, $quantity);
                                     }
-                                    if ($symbolRule['parentRule']) {
-                                        $keys = array(
-                                            'binance_api_key' => $symbolRule['binance_api_key'],
-                                            'binance_secret_key' => $symbolRule['binance_secret_key']
-                                        );
-                                        $this->setRuleToRedis($symbolRule['parentRule'], $rules, $keys, $symbol);
-                                    }
                                     echo '[' . $symbolRule['type'] . ' / ' . $symbol . ']' . ' - ' . '[STOP-LIMIT-SMALLER]' . ' - ' . '[QUANTITY:' . $quantity . ']' . ' - ' . '[STOP:' . $symbolRule['stop'] . ']' . '[LIMIT:' . $symbolRule['ruleLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . '[DATE:' . date('Y-m-d H:i:s') . ']' . PHP_EOL;
                                 } elseif ($symbolRule['stopType'] == 'greater' && $trades['price'] >= $symbolRule['stop']) {
                                     unset($rules[$symbol][$ruleId]);
@@ -58,13 +51,6 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                                         $this->buy($symbolRule, $symbol, $quantity);
                                     } elseif ($symbolRule['type'] == 'SELL') {
                                         $this->sell($symbolRule, $symbol, $quantity);
-                                    }
-                                    if ($symbolRule['type']) {
-                                        $keys = array(
-                                            'binance_api_key' => $symbolRule['binance_api_key'],
-                                            'binance_secret_key' => $symbolRule['binance_secret_key']
-                                        );
-                                        $this->setRuleToRedis($symbolRule['parentRule'], $rules, $keys, $symbol);
                                     }
                                     echo '[' . $symbolRule['type'] . ' / ' . $symbol . ']' . ' - ' . '[STOP-LIMIT-SMALLER]' . ' - ' . '[QUANTITY:' . $quantity . ']' . ' - ' . '[STOP:' . $symbolRule['stop'] . ']' . '[LIMIT:' . $symbolRule['ruleLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . '[DATE:' . date('Y-m-d H:i:s') . ']' . PHP_EOL;
                                 }
@@ -76,13 +62,6 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
                                         $this->buy($symbolRule, $symbol, $quantity);
                                     } elseif ($symbolRule['type'] == 'SELL') {
                                         $this->sell($symbolRule, $symbol, $quantity);
-                                    }
-                                    if ($symbolRule['parentRule']) {
-                                        $keys = array(
-                                            'binance_api_key' => $symbolRule['binance_api_key'],
-                                            'binance_secret_key' => $symbolRule['binance_secret_key']
-                                        );
-                                        $this->setRuleToRedis($symbolRule['parentRule'], $rules, $keys, $symbol);
                                     }
                                     echo '[' . $symbolRule['type'] . ' / ' . $symbol . ']' . ' - ' . '[STOP-LIMIT-SMALLER]' . ' - ' . '[QUANTITY:' . $quantity . ']' . ' - ' . '[STOP:' . $symbolRule['stop'] . ']' . '[LIMIT:' . $symbolRule['ruleLimit'] . ']' . ' - ' . '[PRICE:' . $trades['price'] . ']' . '[DATE:' . date('Y-m-d H:i:s') . ']' . PHP_EOL;
                                 }
@@ -200,30 +179,6 @@ class BinanceRuleCheckCommand extends ContainerAwareCommand
     {
         return $this->getRedisService()->get('symbols');
     }
-
-    /**
-     * @param Rule $rule
-     * @param array $rules
-     * @param array $keys
-     * @param $symbol
-     */
-    public function setRuleToRedis(Rule $rule, $rules = array(), $keys = array(), $symbol)
-    {
-        $rules[$symbol][$rule->getId()] = array(
-            'ruleId' => $rule->getId(),
-            'ruleLimit' => $rule->getRuleLimit(),
-            'stop' => $rule->getStop(),
-            'binance_api_key' => $keys['binance_api_key'],
-            'binance_secret_key' => $keys['binance_secret_key'],
-            'btcPrice' => $rule->getBtcPrice(),
-            'quantity' => $rule->getQuantity(),
-            'stopType' => $rule->getStopType(),
-            'type' => $rule->getType(),
-            'parentRule' => $rule->getParentRule()
-        );
-        $this->getRedisService()->insert('rules', $rules);
-    }
-
 
     public function testBuy()
     {
