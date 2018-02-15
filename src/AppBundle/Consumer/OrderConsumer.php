@@ -69,7 +69,8 @@ class OrderConsumer implements ConsumerInterface
                             'symbol' => $data['symbol'],
                             'status' => $bid->getStatus(),
                             'quantity' => $bid->getExecutedQuantity(),
-                            'ruleLimit' => $data['ruleLimit']
+                            'ruleLimit' => $data['ruleLimit'],
+                            'type' => $data['type']
                         );
                         $this->sendTwitterNotification($twitterMessageData);
                     }
