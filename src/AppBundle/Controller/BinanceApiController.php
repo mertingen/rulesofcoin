@@ -180,16 +180,17 @@ class BinanceApiController extends Controller
                 $gainQuantity = $quantity;
             }
         } elseif ($ruleType == 'SELL') {
-            $userBinanceService->connect($this->getUser()->getBinanceApiKey(),
-                $this->getUser()->getBinanceSecretKey());
-            $validSymbolQuantity = intval($userBinanceService->getUserSymbolPrice($symbol));
-            if ($validSymbolQuantity < $quantity) {
-                //return new JsonJsonResponse(array('error' => true, 'message' => 'Balance is not enough!'));
-                /*return new JsonResponse(
-                    array(
-                        'error' => true, 'message' => 'Balance is not enough!'
-                    ), 404
-                );*/
+            if (!$parentRule) {
+                $userBinanceService->connect($this->getUser()->getBinanceApiKey(),
+                    $this->getUser()->getBinanceSecretKey());
+                $validSymbolQuantity = floatval($userBinanceService->getUserSymbolPrice($symbol));
+                if ($validSymbolQuantity < $quantity) {
+                    return new JsonResponse(
+                        array(
+                            'error' => true, 'message' => 'Balance is not enough!'
+                        ), 404
+                    );
+                }
             }
 
             if ($parentRule) {

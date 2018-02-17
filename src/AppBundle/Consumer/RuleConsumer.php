@@ -56,34 +56,36 @@ class RuleConsumer implements ConsumerInterface
                 $newBid->setExecutedQuantity($bid['executedQuantity']);
 
                 $rule = $this->binanceService->getRule(array('id' => $bid['ruleId']));
-                $rule->setIsDone(true);
-                $this->entityManager->persist($rule);
-                $this->entityManager->flush();
+                if ($rule && $rule instanceof Rule) {
+                    $rule->setIsDone(true);
+                    $this->binanceService->upsertRule($rule);
 
-                $keys = array(
-                    'binanceApiKey' => $bid['binanceApiKey'],
-                    'binanceSecretKey' => $bid['binanceSecretKey'],
-                    'user' => $rule->getUser()
-                );
-
-                $this->checkUserSymbolBalanceRules($keys, $rule);
-                $this->checkParentRule($rule, $keys);
-
-                $userTwitterScreenName = $rule->getUser()->getTwitterScreenName();
-                if ($userTwitterScreenName) {
-                    $twitterMessageData = array(
-                        'screenName' => $userTwitterScreenName,
-                        'symbol' => $rule->getSymbol(),
-                        'quantity' => $newBid->getExecutedQuantity(),
-                        'ruleLimit' => $rule->getRuleLimit()
+                    $keys = array(
+                        'binanceApiKey' => $bid['binanceApiKey'],
+                        'binanceSecretKey' => $bid['binanceSecretKey'],
+                        'user' => $rule->getUser()
                     );
-                    $this->sendTwitterNotification($twitterMessageData);
-                }
 
-                $newBid->setRule($rule);
-                $newBid->setStatus('NEW');
-                $this->entityManager->persist($newBid);
-                $this->entityManager->flush();
+                    $this->checkUserSymbolBalanceRules($rule, $keys);
+                    $this->checkParentRule($rule, $keys);
+
+                    $userTwitterScreenName = $rule->getUser()->getTwitterScreenName();
+                    if ($userTwitterScreenName) {
+                        $twitterMessageData = array(
+                            'screenName' => $userTwitterScreenName,
+                            'symbol' => $rule->getSymbol(),
+                            'quantity' => $newBid->getExecutedQuantity(),
+                            'ruleLimit' => $rule->getRuleLimit(),
+                            'type' => $rule->getType()
+                        );
+                        $this->sendTwitterNotification($twitterMessageData);
+                    }
+
+                    $newBid->setRule($rule);
+                    $newBid->setStatus('NEW');
+                    $this->entityManager->persist($newBid);
+                    $this->entityManager->flush();
+                }
             }
         } catch (\Exception $exception) {
             echo $exception->getMessage();
@@ -95,7 +97,7 @@ class RuleConsumer implements ConsumerInterface
      * @param array $data
      * @param Rule $rule
      */
-    public function checkUserSymbolBalanceRules($data = array(), Rule $rule)
+    public function checkUserSymbolBalanceRules(Rule $rule, $data = array())
     {
         $this->userBinanceService->connect($data['binanceApiKey'], $data['binanceSecretKey']);
         $allRules = $this->redisService->get('rules');
@@ -107,20 +109,19 @@ class RuleConsumer implements ConsumerInterface
              */
             foreach ($userRules as $userRule) {
                 if ($userRule->getBtcPrice() > $userBtc) {
-                    $this->entityManager->remove($userRule);
-                    $this->entityManager->flush();
+                    $this->binanceService->removeRule($userRule);
                     unset($allRules[$userRule->getSymbol()][$userRule->getId()]);
-                    $this->redisService->insert('rules', $allRules);
                 }
             }
         } elseif ($rule->getType() == 'SELL') {
             $symbolAvailable = $this->userBinanceService->getUserSymbolPrice($rule->getSymbol());
             if (floatval($rule->getQuantity()) > floatval($symbolAvailable) && !$rule->getParentRule()) {
-                $this->entityManager->remove($rule);
-                $this->entityManager->flush();
+                $this->binanceService->removeRule($rule);
                 unset($allRules[$rule->getSymbol()][$rule->getId()]);
             }
         }
+
+        $this->redisService->insert('rules', $allRules);
     }
 
     /**
@@ -129,9 +130,9 @@ class RuleConsumer implements ConsumerInterface
      */
     public function checkParentRule(Rule $rule, $keys = array())
     {
-        if ($rule->getParentRule()) {
+        $parentRule = $rule->getParentRule();
+        if ($parentRule && $parentRule instanceof Rule) {
             $rules = $this->redisService->get('rules');
-            $parentRule = $rule->getParentRule();
             $rules[$parentRule->getSymbol()][$parentRule->getId()] = array(
                 'ruleId' => $parentRule->getId(),
                 'ruleLimit' => $parentRule->getRuleLimit(),
@@ -152,7 +153,7 @@ class RuleConsumer implements ConsumerInterface
      */
     public function sendTwitterNotification($data = array())
     {
-        $message = "A rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['ruleLimit'] . "]";
+        $message = "[" . $data['type'] . " rule is done! [SYMBOL:" . $data['symbol'] . "] - [QUANTITY:" . $data['quantity'] . "] - [LIMIT:" . $data['ruleLimit'] . "]";
         $this->twitterService->connect(
             $this->container->getParameter('twitter')
         );

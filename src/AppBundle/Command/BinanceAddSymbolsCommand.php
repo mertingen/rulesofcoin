@@ -32,7 +32,7 @@ class BinanceAddSymbolsCommand extends ContainerAwareCommand
         foreach ($api->prices() as $symbol => $price) {
             $lowerSymbol = strtolower($symbol);
             if (strpos($lowerSymbol, "btc") > -1 && $lowerSymbol != 'btcusdt') {
-                echo $symbol . ' eklendi...' . PHP_EOL;
+                echo $symbol . ' added...' . PHP_EOL;
                 $symbols[] = $symbol;
             }
         }

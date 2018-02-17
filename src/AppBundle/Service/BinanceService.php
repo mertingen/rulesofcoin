@@ -132,7 +132,7 @@ class BinanceService
      */
     public function setRulesToRedis(User $user)
     {
-        $rules = $this->getRules(array('isDone' => false));
+        $rules = $this->getRules(array('isDone' => false, 'parentRule' => NULL));
         $data = array();
         /**
          * @var $rule Rule
@@ -147,8 +147,7 @@ class BinanceService
                 'btcPrice' => $rule->getBtcPrice(),
                 'quantity' => $rule->getQuantity(),
                 'stopType' => $rule->getStopType(),
-                'type' => $rule->getType(),
-                'parentRule' => $rule->getParentRule()
+                'type' => $rule->getType()
             );
         }
         $this->redisService->insert('rules', $data);
