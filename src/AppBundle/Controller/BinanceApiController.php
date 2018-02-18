@@ -12,10 +12,11 @@ namespace AppBundle\Controller;
 use AppBundle\Entity\Bid;
 use AppBundle\Entity\Rule;
 use AppBundle\Service\BinanceService;
+use AppBundle\Service\RedisService;
 use AppBundle\Service\UserBinanceService;
 use AppBundle\Service\UserService;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -27,7 +28,7 @@ use Symfony\Component\Routing\Annotation\Route;
  * @Route("/binance-api")
  * @Security("has_role('ROLE_USER')")
  */
-class BinanceApiController extends Controller
+class BinanceApiController extends AbstractController
 {
 
     /**
@@ -549,9 +550,10 @@ class BinanceApiController extends Controller
      * @Route("/removeRuleWithChildren/{id}", methods={"GET"}, name="binance-api-remove-rule-wtih-children")
      * @param Rule $rule
      * @param BinanceService $binanceService
+     * @param RedisService $redisService
      * @return Response
      */
-    public function removeRuleWithChildren(Rule $rule = NULL, BinanceService $binanceService)
+    public function removeRuleWithChildren(Rule $rule = NULL, BinanceService $binanceService, RedisService $redisService)
     {
         if (!$rule) {
             return new JsonResponse(
@@ -593,8 +595,19 @@ class BinanceApiController extends Controller
                 $responseArray['parentRuleId'] = ($grandParent) ? null : $removingRule->getParentRule()->getId();
             }
         }
-
         $binanceService->removeRule($removingRule);
+
+        $rules = $redisService->get('rules');
+        if ($rules) {
+            if (!empty($rules[$removingRule->getSymbol()][$removingRule->getId()])) {
+                unset($rules[$removingRule->getSymbol()][$removingRule->getId()]);
+            }
+            if (count($rules[$removingRule->getSymbol()]) < 1 && empty($rules[$removingRule->getSymbol()])) {
+                unset($rules[$removingRule->getSymbol()]);
+            }
+        }
+
+
         return new JsonResponse(
             $responseArray
             , 200
