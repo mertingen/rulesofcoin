@@ -550,10 +550,9 @@ class BinanceApiController extends AbstractController
      * @Route("/removeRuleWithChildren/{id}", methods={"GET"}, name="binance-api-remove-rule-wtih-children")
      * @param Rule $rule
      * @param BinanceService $binanceService
-     * @param RedisService $redisService
      * @return Response
      */
-    public function removeRuleWithChildren(Rule $rule = NULL, BinanceService $binanceService, RedisService $redisService)
+    public function removeRuleWithChildren(Rule $rule = NULL, BinanceService $binanceService)
     {
         if (!$rule) {
             return new JsonResponse(
@@ -597,6 +596,7 @@ class BinanceApiController extends AbstractController
         }
         $binanceService->removeRule($removingRule);
 
+        $redisService = $this->get('redis_service');
         $rules = $redisService->get('rules');
         if ($rules) {
             if (!empty($rules[$removingRule->getSymbol()][$removingRule->getId()])) {
