@@ -593,7 +593,6 @@ class BinanceApiController extends Controller
                 $responseArray['parentRuleId'] = ($grandParent) ? null : $removingRule->getParentRule()->getId();
             }
         }
-        $binanceService->removeRule($removingRule);
 
         $redisService = $this->get('redis_service');
         $rules = $redisService->get('rules');
@@ -607,6 +606,7 @@ class BinanceApiController extends Controller
             $redisService->insert('rules', $rules);
         }
 
+        $binanceService->removeRule($removingRule);
 
         return new JsonResponse(
             $responseArray
