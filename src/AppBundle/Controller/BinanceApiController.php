@@ -604,6 +604,7 @@ class BinanceApiController extends Controller
             if (count($rules[$removingRule->getSymbol()]) < 1 && empty($rules[$removingRule->getSymbol()])) {
                 unset($rules[$removingRule->getSymbol()]);
             }
+            $redisService->insert('rules', $rules);
         }
 
 
