@@ -109,15 +109,15 @@ class RuleConsumer implements ConsumerInterface
              */
             foreach ($userRules as $userRule) {
                 if ($userRule->getBtcPrice() > $userBtc) {
-                    $this->binanceService->removeRule($userRule);
                     unset($allRules[$userRule->getSymbol()][$userRule->getId()]);
+                    $this->binanceService->removeRule($userRule);
                 }
             }
         } elseif ($rule->getType() == 'SELL') {
             $symbolAvailable = $this->userBinanceService->getUserSymbolPrice($rule->getSymbol());
             if (floatval($rule->getQuantity()) > floatval($symbolAvailable) && !$rule->getParentRule()) {
-                $this->binanceService->removeRule($rule);
                 unset($allRules[$rule->getSymbol()][$rule->getId()]);
+                $this->binanceService->removeRule($rule);
             }
         }
 
